@@ -1,0 +1,9 @@
+services:
+  _defaults:
+    public:       false
+
+  ##### User Command
+  austral.entity.initialise-bundle.command:
+    class:        Austral\EntityBundle\Command\InitialiseBundleEntitiesCommand
+    tags:
+      - { name: console.command, command: "austral:entity:initialise-bundle" }

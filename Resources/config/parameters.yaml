@@ -1,0 +1,2 @@
+parameters:
+  austral.entity.initialise-bundle.path:              "%kernel.project_dir%/src/Entity/Austral"

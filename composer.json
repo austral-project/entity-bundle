@@ -1,0 +1,38 @@
+{
+  "name":                                     "austral/entity-bundle",
+  "type":                                     "symfony-bundle",
+  "description":                              "Tools for Symfony Entity",
+  "keywords":                                 ["Austral", "Entity", "Symfony"],
+  "license":                                  "MIT",
+  "homepage":                                 "https://austral.dev",
+  "version":                                  "3.0",
+  "authors": [
+    {
+      "name":                                 "Matthieu Beurel",
+      "email":                                "matthieu@austral.dev",
+      "role":                                 "Developer"
+    }
+  ],
+  "require": {
+    "php":                                    "^7.4 || ^8.0",
+
+    "doctrine/annotations":                   "^1.0",
+    "doctrine/doctrine-bundle":               "^2.2",
+    "doctrine/doctrine-migrations-bundle":    "^3.0",
+    "doctrine/orm":                           "^2.7",
+    "symfony/string":                         "^5.4",
+
+    "gedmo/doctrine-extensions":              "^3.0",
+    "ramsey/uuid":                            "^3.0",
+    "adbario/php-dot-notation":               "^2.2"
+  },
+  "require-dev": {
+  },
+  "config": {
+    "sort-packages":                          true
+  },
+  "autoload": {
+    "psr-4": { "Austral\\EntityBundle\\": "" }
+  },
+  "minimum-stability":                        "dev"
+}
