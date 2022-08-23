@@ -81,35 +81,35 @@ abstract class EntityClassMapping implements EntityClassMappingInterface
 
   /**
    * @param EntityInterface $object
-   * @param string|null $fieldname
+   * @param string $fieldname
    *
    * @return mixed
    * @throws Exception
    */
-  public function getObjectValue(EntityInterface $object, string $fieldname = null)
+  public function getObjectValue(EntityInterface $object, string $fieldname)
   {
     if($this->getterObjectValueFonction instanceof Closure)
     {
-      return $this->getterObjectValueFonction->call($this, $object, $fieldname ? : $this->getFieldname());
+      return $this->getterObjectValueFonction->call($this, $object, $fieldname);
     }
-    return $object->getValueByFieldname($fieldname ? :$this->getFieldname());
+    return $object->getValueByFieldname($fieldname);
   }
 
   /**
    * @param EntityInterface $object
-   * @param string|null $fieldname
+   * @param string $fieldname
    * @param null $value
    *
    * @return $this
    * @throws Exception
    */
-  public function setObjectValue(EntityInterface $object, string $fieldname = null, $value = null): EntityClassMappingInterface
+  public function setObjectValue(EntityInterface $object, string $fieldname, $value = null): EntityClassMappingInterface
   {
     if($this->setterObjectValueFonction instanceof Closure)
     {
-      $this->setterObjectValueFonction->call($this, $object, $fieldname ? : $this->getFieldname(), $value);
+      $this->setterObjectValueFonction->call($this, $object, $fieldname, $value);
     }
-    $object->setValueByFieldname($fieldname ? :$this->getFieldname(), $value);
+    $object->setValueByFieldname($fieldname, $value);
     return $this;
   }
 

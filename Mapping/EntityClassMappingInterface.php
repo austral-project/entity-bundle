@@ -51,22 +51,22 @@ interface EntityClassMappingInterface
 
   /**
    * @param EntityInterface $object
-   * @param string|null $fieldname
+   * @param string $fieldname
    *
    * @return mixed
    * @throws Exception
    */
-  public function getObjectValue(EntityInterface $object, string $fieldname = null);
+  public function getObjectValue(EntityInterface $object, string $fieldname);
 
   /**
    * @param EntityInterface $object
-   * @param string|null $fieldname
+   * @param string $fieldname
    * @param null $value
    *
    * @return $this
    * @throws Exception
    */
-  public function setObjectValue(EntityInterface $object, string $fieldname = null, $value = null): EntityClassMappingInterface;
+  public function setObjectValue(EntityInterface $object, string $fieldname, $value = null): EntityClassMappingInterface;
 
 
 }
