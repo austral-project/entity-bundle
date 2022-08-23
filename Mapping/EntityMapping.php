@@ -41,6 +41,11 @@ final Class EntityMapping
   /**
    * @var array
    */
+  protected array $entityClassMapping = array();
+
+  /**
+   * @var array
+   */
   protected array $fieldsMappingByClass = array();
 
 
@@ -72,6 +77,28 @@ final Class EntityMapping
   {
     $this->mapping = $mapping;
     return $this;
+  }
+
+  /**
+   * @param EntityClassMappingInterface $entityClassMapping
+   *
+   * @return EntityMapping
+   */
+  public function addEntityClassMapping(EntityClassMappingInterface $entityClassMapping): EntityMapping
+  {
+    $entityClassMapping->setEntityMapping($this);
+    $this->entityClassMapping[$entityClassMapping->getClassname()] = $entityClassMapping;
+    return $this;
+  }
+
+  /**
+   * @param string $entityClassMappingClass
+   *
+   * @return ?EntityClassMappingInterface
+   */
+  public function getEntityClassMapping(string $entityClassMappingClass): ?EntityClassMappingInterface
+  {
+    return array_key_exists($entityClassMappingClass, $this->entityClassMapping) ? $this->entityClassMapping[$entityClassMappingClass] : null;
   }
 
   /**
