@@ -10,6 +10,7 @@
  
 namespace Austral\EntityBundle\Entity;
 
+use Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface;
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\Mapping as ORM;
@@ -252,7 +253,7 @@ abstract class Entity implements EntityInterface
    */
   public function useAustralEntityTranslateBundle(): bool
   {
-    return AustralTools::usedImplements($this, "Austral\EntityTranslateBundle\Entity\Interfaces\EntityTranslateMasterInterface");
+    return $this instanceof TranslateMasterInterface;
   }
 
 }

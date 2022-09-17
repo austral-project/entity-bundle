@@ -241,14 +241,16 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   /**
    * @param EntityInterface $object
    * @param bool $andFlush
+   * @param bool $dispatchToFlush
    *
    * @return $this
    */
-  public function update(EntityInterface $object, bool $andFlush = true): EntityManager
+  public function update(EntityInterface $object, bool $andFlush = true, bool $dispatchToFlush = false): EntityManager
   {
     $entityManagerEvent = new EntityManagerEvent("update", $this, $object);
     $this->dispatch($entityManagerEvent, EntityManagerEvent::EVENT_UPDATE);
     $this->addEntitytManagerEvent($entityManagerEvent);
+    $entityManagerEvent->setDispatchToFlush($dispatchToFlush);
     $this->em->persist($object);
     if ($andFlush)
     {

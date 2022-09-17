@@ -5,7 +5,7 @@
   "keywords":                                 ["Austral", "Entity", "Symfony"],
   "license":                                  "MIT",
   "homepage":                                 "https://austral.dev",
-  "version":                                  "3.0",
+  "version":                                  "3.1",
   "authors": [
     {
       "name":                                 "Matthieu Beurel",

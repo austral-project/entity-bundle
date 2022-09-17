@@ -136,6 +136,17 @@ final Class Mapping
 
   /**
    * @param string $entityClass
+   * @param string $entityClassMapping
+   *
+   * @return EntityClassMappingInterface|null
+   */
+  public function getEntityClassMapping(string $entityClass, string $entityClassMapping): ?EntityClassMappingInterface
+  {
+    return ($this->getEntityMapping($entityClass)) ? $this->getEntityMapping($entityClass)->getEntityClassMapping($entityClassMapping) : null;
+  }
+
+  /**
+   * @param string $entityClass
    * @param string $fieldname
    *
    * @return array
