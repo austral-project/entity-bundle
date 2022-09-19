@@ -54,6 +54,7 @@ class EntityManagerEventSubscriber implements EventSubscriberInterface
       ->getPropertyAccessor();
 
     $object = $entityEvent->getObject();
+    $object->setIsCreate(true);
     $hydrateValues = $entityEvent->getHydrateValues();
     foreach($entityEvent->getEntityManager()->getFieldsMapping() as $fieldName => $params)
     {

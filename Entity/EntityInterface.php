@@ -35,6 +35,18 @@ interface EntityInterface
   public function setId(string $id): EntityInterface;
 
   /**
+   * @return bool
+   */
+  public function getIsCreate(): bool;
+
+  /**
+   * @param bool $isCreate
+   *
+   * @return EntityInterface
+   */
+  public function setIsCreate(bool $isCreate): EntityInterface;
+
+  /**
    * @return array
    */
   public function arrayObject(): array;

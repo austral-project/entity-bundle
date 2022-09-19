@@ -30,6 +30,11 @@ class InitialiseBundleEntitiesCommand extends Command
   protected static $defaultName = 'austral:entity:initialise-bundle';
 
   /**
+   * @var bool
+   */
+  protected bool $initEntityMapping = false;
+
+  /**
    * {@inheritdoc}
    */
   protected function configure()
