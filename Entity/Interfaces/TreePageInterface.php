@@ -10,6 +10,8 @@
 
 namespace Austral\EntityBundle\Entity\Interfaces;
 
+use Austral\EntityBundle\Entity\EntityInterface;
+
 /**
  * Austral Entity TreePage Interface.
  * @author Matthieu Beurel <matthieu@austral.dev>
@@ -20,7 +22,7 @@ interface TreePageInterface
   /**
    * Get PageParent
    *
-   * @return SeoInterface|null
+   * @return TreePageInterface|EntityInterface|null
    */
   public function getTreePageParent(): ?TreePageInterface;
 
@@ -29,7 +31,7 @@ interface TreePageInterface
    *
    * @param TreePageInterface $parent
    *
-   * @return SeoInterface|null
+   * @return TreePageInterface|null
    */
   public function setTreePageParent(TreePageInterface $parent): ?TreePageInterface;
 

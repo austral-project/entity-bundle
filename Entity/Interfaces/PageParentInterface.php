@@ -10,6 +10,8 @@
 
 namespace Austral\EntityBundle\Entity\Interfaces;
 
+use Austral\EntityBundle\Entity\EntityInterface;
+
 /**
  * Austral Entity Page Parent Interface.
  * @author Matthieu Beurel <matthieu@austral.dev>
@@ -19,16 +21,16 @@ interface PageParentInterface
   /**
    * Get refH1
    *
-   * @return SeoInterface|PageParentInterface|null
+   * @return TreePageInterface|PageParentInterface|EntityInterface|null
    */
-  public function getPageParent(): ?SeoInterface;
+  public function getTreePageParent(): ?TreePageInterface;
 
   /**
-   * @param SeoInterface $page
+   * @param TreePageInterface $page
    *
-   * @return $this
+   * @return TreePageInterface
    */
-  public function setPageParent(SeoInterface $page): SeoInterface;
+  public function setTreePageParent(TreePageInterface $parent): ?TreePageInterface;
 }
 
     

@@ -98,7 +98,17 @@ final Class EntityMapping
    */
   public function getEntityClassMapping(string $entityClassMappingClass): ?EntityClassMappingInterface
   {
-    return array_key_exists($entityClassMappingClass, $this->entityClassMapping) ? $this->entityClassMapping[$entityClassMappingClass] : null;
+    return $this->hasEntityClassMapping($entityClassMappingClass) ? $this->entityClassMapping[$entityClassMappingClass] : null;
+  }
+
+  /**
+   * @param string $entityClassMappingClass
+   *
+   * @return bool
+   */
+  public function hasEntityClassMapping(string $entityClassMappingClass): bool
+  {
+    return array_key_exists($entityClassMappingClass, $this->entityClassMapping);
   }
 
   /**
