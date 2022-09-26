@@ -238,7 +238,7 @@ abstract class Entity implements EntityInterface
    * @return EntityInterface
    * @throws \Exception
    */
-  public function setValueByFieldname(string $fieldname, $value = null)
+  public function setValueByFieldname(string $fieldname, $value = null): EntityInterface
   {
     $propertyAccessor = PropertyAccess::createPropertyAccessor();
     if($propertyAccessor->isWritable($this, $fieldname))
