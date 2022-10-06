@@ -12,7 +12,7 @@ namespace Austral\EntityBundle\Mapping;
 
 use Austral\EntityBundle\Entity\EntityInterface;
 use Austral\EntityBundle\EntityManager\EntityManager;
-use Austral\EntityBundle\Repository\RepositoryInterface;
+use Austral\EntityBundle\Repository\EntityRepositoryInterface;
 use Austral\ToolsBundle\Services\Debug;
 use Doctrine\ORM\NonUniqueResultException;
 
@@ -167,7 +167,7 @@ final Class Mapping
   {
     if($entitiesFileMapping = $this->getEntityMapping($classOrSlugger))
     {
-      /** @var RepositoryInterface $repository */
+      /** @var EntityRepositoryInterface $repository */
       $repository = $this->entityManager->getDoctrineEntityManager()->getRepository($entitiesFileMapping->entityClass);
       return $repository->retreiveById($id);
     }

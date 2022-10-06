@@ -31,6 +31,11 @@ services:
     tags:
       - { name: kernel.event_subscriber }
 
+  austral.entity.query_builder.event_subscriber:
+    class:        Austral\EntityBundle\EventSubscriber\QueryBuilderEventSubscriber
+    tags:
+      - { name: kernel.event_subscriber }
+
 ##### Austral Entity Manager
   austral.entity_manager:
     class:        Austral\EntityBundle\EntityManager\EntityManager

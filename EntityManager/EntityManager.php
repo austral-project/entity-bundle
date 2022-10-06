@@ -13,7 +13,7 @@ namespace Austral\EntityBundle\EntityManager;
 use Austral\EntityBundle\Event\EntityManagerEvent;
 use Austral\EntityBundle\Event\EntityManagerMappingEvent;
 use Austral\EntityBundle\Entity\EntityInterface;
-use Austral\EntityBundle\Repository\RepositoryInterface;
+use Austral\EntityBundle\Repository\EntityRepositoryInterface;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Exception;
@@ -41,7 +41,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   protected DoctrineEntityManagerInterface $em;
 
   /**
-   * @var ?RepositoryInterface
+   * @var ?EntityRepositoryInterface
    */
   protected $repository = null;
 
@@ -104,7 +104,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function createQueryBuilder(string $alias = "root", $indexBy = null): QueryBuilder
   {
-    return $this->repository->createQueryBuilder($alias, $indexBy);
+    return $this->getRepository()->createQueryBuilder($alias, $indexBy);
   }
 
   /**
@@ -410,7 +410,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function selectAll(string $orderByAttribute = 'id', string $orderByType = "ASC", \Closure $closure = null)
   {
-    return $this->repository->selectAll($orderByAttribute, $orderByType, $closure);
+    return $this->getRepository()->selectAll($orderByAttribute, $orderByType, $closure);
   }
 
   /**
@@ -420,7 +420,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function countAll(\Closure $closure = null): int
   {
-    return $this->repository->countAll($closure);
+    return $this->getRepository()->countAll($closure);
   }
 
   /**
@@ -430,7 +430,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function selectByQueryBuilder(QueryBuilder $queryBuilder)
   {
-    return $this->repository->selectByQueryBuilder($queryBuilder);
+    return $this->getRepository()->selectByQueryBuilder($queryBuilder);
   }
 
   /**
@@ -441,7 +441,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function selectByClosure(\Closure $closure, string $alias = "root")
   {
-    return $this->repository->selectByClosure($closure, $alias);
+    return $this->getRepository()->selectByClosure($closure, $alias);
   }
 
   /**
@@ -451,7 +451,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function paginatorByQueryBuilder(QueryBuilder $queryBuilder): array
   {
-    return $this->repository->paginatorByQueryBuilder($queryBuilder);
+    return $this->getRepository()->paginatorByQueryBuilder($queryBuilder);
   }
 
   /**
@@ -462,17 +462,21 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function countByQueryBuilder(QueryBuilder $queryBuilder): int
   {
-    return $this->repository->countByQueryBuilder($queryBuilder);
+    return $this->getRepository()->countByQueryBuilder($queryBuilder);
   }
 
   /**
-   * @var string|null $entity
-   *
-   * @return RepositoryInterface|EntityRepository|ObjectRepository
+   * @return EntityRepositoryInterface|EntityRepository|ObjectRepository
+   *@var string|null $entity
    */
   public function getRepository(string $entity = null)
   {
-    return $this->repository ?? $this->getDoctrineEntityManager()->getRepository($entity);
+    $repository = $this->repository ?? $this->getDoctrineEntityManager()->getRepository($entity);
+    if($repository instanceof EntityRepositoryInterface)
+    {
+      $repository->setDispatcher($this->dispatcher);
+    }
+    return $repository;
   }
 
 }

@@ -11,25 +11,54 @@
 namespace Austral\EntityBundle\Repository;
 
 use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\EntityRepository as BaseEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Austral Abstract Repository.
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @abstract
  */
-class EntityRepository extends BaseEntityRepository implements RepositoryInterface
+class EntityRepository extends BaseEntityRepository implements EntityRepositoryInterface
 {
 
+  /** @var EventDispatcherInterface|null */
+  private ?EventDispatcherInterface $dispatcher = null;
+
   /**
-   * @var string|null
+   * Creates a new QueryBuilder instance that is prepopulated for this entity name.
+   *
+   * @param string      $alias
+   * @param string|null $indexBy
+   *
+   * @return AustralQueryBuilder
    */
-  protected ?string $currentLanguage = null;
+  public function createQueryBuilder($alias, $indexBy = null)
+  {
+    return (new AustralQueryBuilder($this->_em, $this->getClassName(), $this->dispatcher))
+      ->select($alias)
+      ->from($this->_entityName, $alias, $indexBy);
+  }
+
+  /**
+   * @param EventDispatcherInterface|null $dispatcher
+   *
+   * @return EntityRepository
+   */
+  public function setDispatcher(?EventDispatcherInterface $dispatcher): EntityRepository
+  {
+    if(!$this->dispatcher)
+    {
+      $this->dispatcher = $dispatcher;
+    }
+    return $this;
+  }
 
   /**
    * @return bool

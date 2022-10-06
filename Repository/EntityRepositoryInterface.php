@@ -14,13 +14,21 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Austral Interface Repository.
  * @author Matthieu Beurel <matthieu@austral.dev>
  */
-interface RepositoryInterface
+interface EntityRepositoryInterface
 {
+
+  /**
+   * @param EventDispatcherInterface|null $dispatcher
+   *
+   * @return EntityRepository
+   */
+  public function setDispatcher(?EventDispatcherInterface $dispatcher): EntityRepository;
 
   /**
    * @return bool
