@@ -77,11 +77,11 @@ class EntityAnnotations
   }
 
   /**
-   * @param AustralEntityAnnotationInterface $annotation
+   * @param $annotation
    *
    * @return $this
    */
-  public function addFieldAnnotation(AustralEntityAnnotationInterface $annotation): EntityAnnotations
+  public function addFieldAnnotation($annotation): EntityAnnotations
   {
     $this->fieldsAnnotations[$annotation->getKeyname()][$annotation->getClassname()] = $annotation;
     return $this;

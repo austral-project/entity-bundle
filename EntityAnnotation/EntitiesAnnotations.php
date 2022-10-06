@@ -76,6 +76,7 @@ class EntitiesAnnotations
         $entityAnnotation = EntityAnnotations::create($classMetadata);
         $this->addAnnotationsByClass($classMetadata, $entityAnnotation);
         $this->addAnnotationsByFields($classMetadata, $entityAnnotation);
+        $this->addAnnotationsByMethods($classMetadata, $entityAnnotation);
         $this->entitiesAnnotations[$classMetadata->getName()] = $entityAnnotation;
       }
     }
@@ -168,6 +169,29 @@ class EntitiesAnnotations
         if(AustralTools::usedImplements($annotation, AustralEntityAnnotationInterface::class))
         {
           $annotation->setKeyname($fieldname);
+          $entityAnnotation->addFieldAnnotation($annotation);
+        }
+      }
+    }
+  }
+
+  /**
+   * @param ClassMetadata $classMetadata
+   * @param EntityAnnotations $entityAnnotation
+   *
+   * @return void
+   * @throws \ReflectionException
+   */
+  public function addAnnotationsByMethods(ClassMetadata $classMetadata, EntityAnnotations $entityAnnotation)
+  {
+    /** @var \ReflectionMethod $method */
+    foreach($classMetadata->getReflectionClass()->getMethods() as $method)
+    {
+      foreach($this->reader->getMethodAnnotations($method) as $annotation)
+      {
+        if(AustralTools::usedImplements($annotation, AustralEntityAnnotationInterface::class))
+        {
+          $annotation->setKeyname($method->getName());
           $entityAnnotation->addFieldAnnotation($annotation);
         }
       }
