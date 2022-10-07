@@ -9,6 +9,9 @@
  */
 
 namespace Austral\EntityBundle;
+use Austral\EntityBundle\DependencyInjection\Compiler\DoctrineResolveTargetEntityPass;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
@@ -17,5 +20,12 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 class AustralEntityBundle extends Bundle
 {
-
+  /**
+   * @param ContainerBuilder $container
+   */
+  public function build(ContainerBuilder $container)
+  {
+    parent::build($container);
+    $container->addCompilerPass(new DoctrineResolveTargetEntityPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 1000);
+  }
 }
