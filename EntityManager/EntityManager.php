@@ -471,7 +471,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function getRepository(string $entity = null)
   {
-    $repository = $this->repository ?? $this->getDoctrineEntityManager()->getRepository($entity);
+    $repository = $entity ? $this->getDoctrineEntityManager()->getRepository($entity) : $this->repository;
     if($repository instanceof EntityRepositoryInterface)
     {
       $repository->setDispatcher($this->dispatcher);
