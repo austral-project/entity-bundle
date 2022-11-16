@@ -183,7 +183,7 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
    */
   public function selectByClosure(\Closure $closure, string $alias = "root")
   {
-    $queryBuilder = $this->createQueryBuilder('root');
+    $queryBuilder = $this->createQueryBuilder($alias);
     if($closure instanceof \Closure)
     {
       $closure->call($this, $queryBuilder);
