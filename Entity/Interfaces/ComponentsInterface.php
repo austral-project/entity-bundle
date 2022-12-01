@@ -55,10 +55,11 @@ interface ComponentsInterface
 
   /**
    * @param array $components
+   * @param bool $updated
    *
    * @return $this
    */
-  public function setComponents(array $components): ComponentsInterface;
+  public function setComponents(array $components, bool $updated = true): ComponentsInterface;
 
   /**
    * @param array $componentsTemplate
