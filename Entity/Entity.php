@@ -228,7 +228,7 @@ abstract class Entity implements EntityInterface
     {
       return $propertyAccessor->getValue($this, $fieldname);
     }
-    throw new \Exception("EntityFileBundle -> EntityFileTrait {$fieldname} not exist to Entity Class ".get_class($this));
+    throw new \Exception("{$fieldname} not exist to Entity Class ".get_class($this));
   }
 
   /**
