@@ -182,6 +182,15 @@ abstract class Entity implements EntityInterface
   }
 
   /**
+   * objectKey
+   * @return string
+   */
+  public function objectKey(): string
+  {
+    return "{$this->getEntityName()}:{$this->getId()}";
+  }
+
+  /**
    * @return string
    */
   public function getSnakeClassname(): string
