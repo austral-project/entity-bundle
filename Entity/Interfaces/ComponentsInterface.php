@@ -47,6 +47,11 @@ interface ComponentsInterface
   public function getComponentsTemplate(): array;
 
   /**
+   * @return array
+   */
+  public function getComponentsTemplateByTypes(): array;
+
+  /**
    * @param string $containerName
    *
    * @return array
@@ -67,6 +72,13 @@ interface ComponentsInterface
    * @return $this|ComponentsInterface
    */
   public function setComponentsTemplate(array $componentsTemplate): ComponentsInterface;
+
+  /**
+   * @param array $componentsTemplateByTypes
+   *
+   * @return $this|ComponentsInterface
+   */
+  public function setComponentsTemplateByTypes(array $componentsTemplateByTypes): ComponentsInterface;
 
   /**
    * Add child
