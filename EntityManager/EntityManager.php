@@ -390,15 +390,26 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
 
   /**
    * @param string $key
-   * @param string $id
+   * @param string $value
    * @param \Closure|null $closure
    *
    * @return mixed
    * @throws NonUniqueResultException
    */
-  public function retreiveByKey(string $key, string $id, \Closure $closure = null)
+  public function retreiveByKey(string $key, string $value, \Closure $closure = null)
   {
-    return $this->repository->retreiveByKey($key, $id, $closure);
+    return $this->repository->retreiveByKey($key, $value, $closure);
+  }
+
+  /**
+   * @param \Closure|null $closure
+   *
+   * @return mixed
+   * @throws NonUniqueResultException
+   */
+  public function retreiveByClosure(\Closure $closure = null)
+  {
+    return $this->repository->retreiveByClosure($closure);
   }
 
   /**

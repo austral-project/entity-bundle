@@ -81,6 +81,30 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
   }
 
   /**
+   * @param \Closure|null $closure
+   *
+   * @return mixed
+   * @throws NonUniqueResultException
+   */
+  public function retreiveByClosure(\Closure $closure = null)
+  {
+    $queryBuilder = $this->createQueryBuilder('root');
+    $queryBuilder = $this->queryBuilderExtends("retreive-by-key", $queryBuilder);
+    if($closure instanceof \Closure)
+    {
+      $closure->call($this, $queryBuilder);
+    }
+    $queryBuilder->setMaxResults(1);
+    $query = $queryBuilder->getQuery();
+    try {
+      $object = $query->getSingleResult();
+    } catch (NoResultException $e) {
+      $object = null;
+    }
+    return $object;
+  }
+
+  /**
    * @param string $key
    * @param string $value
    * @param \Closure|null $closure

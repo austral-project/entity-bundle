@@ -55,6 +55,14 @@ interface EntityRepositoryInterface
   public function retreiveByKey(string $key, string $value, \Closure $closure = null);
 
   /**
+   * @param \Closure|null $closure
+   *
+   * @return mixed
+   * @throws NonUniqueResultException
+   */
+  public function retreiveByClosure(\Closure $closure = null);
+
+  /**
    * @param string $orderByAttribute
    * @param string $orderByType
    * @param \Closure|null $closure

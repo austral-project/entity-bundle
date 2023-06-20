@@ -11,6 +11,7 @@
 namespace Austral\EntityBundle\EntityManager;
 
 use Doctrine\ORM\EntityManagerInterface as DoctrineEntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 
 /**
  * Austral Interface EntityManagerORM.
@@ -40,6 +41,14 @@ interface EntityManagerORMInterface extends EntityManagerInterface
    * @return DoctrineEntityManagerInterface
    */
   public function getDoctrineEntityManager(): DoctrineEntityManagerInterface;
+
+  /**
+   * @param \Closure|null $closure
+   *
+   * @return mixed
+   * @throws NonUniqueResultException
+   */
+  public function retreiveByClosure(\Closure $closure = null);
 
 
 
