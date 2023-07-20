@@ -77,6 +77,16 @@ class EntityAnnotations
   }
 
   /**
+   * @param $slugger
+   * @return EntityAnnotations
+   */
+  public function setSlugger($slugger): EntityAnnotations
+  {
+    $this->slugger = $slugger;
+    return $this;
+  }
+
+  /**
    * @param $annotation
    *
    * @return $this

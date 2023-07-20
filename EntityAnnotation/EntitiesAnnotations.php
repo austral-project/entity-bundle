@@ -12,6 +12,7 @@ namespace Austral\EntityBundle\EntityAnnotation;
 
 use Austral\EntityBundle\Annotation\AustralEntityAnnotationInterface;
 
+use Austral\EntityBundle\Annotation\Slugger;
 use Austral\ToolsBundle\AustralTools;
 use Austral\ToolsBundle\Services\Debug;
 
@@ -136,6 +137,10 @@ class EntitiesAnnotations
       {
         $annotation->setKeyname($entityAnnotation->getClassname());
         $entityAnnotation->addClassAnnotation($annotation);
+      }
+      if($annotation instanceof Slugger)
+      {
+        $entityAnnotation->setSlugger($annotation->slugger);
       }
     }
     if($parentClass = $classMetadata->getReflectionClass()->getParentClass())
