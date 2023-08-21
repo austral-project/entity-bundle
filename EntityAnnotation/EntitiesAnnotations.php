@@ -77,6 +77,7 @@ class EntitiesAnnotations
         $entityAnnotation = EntityAnnotations::create($classMetadata);
         $this->addAnnotationsByClass($classMetadata, $entityAnnotation);
         $this->addAnnotationsByFields($classMetadata, $entityAnnotation);
+        $this->addAnnotationsByProperties($classMetadata, $entityAnnotation);
         $this->addAnnotationsByMethods($classMetadata, $entityAnnotation);
         $this->entitiesAnnotations[$classMetadata->getName()] = $entityAnnotation;
       }
@@ -175,6 +176,34 @@ class EntitiesAnnotations
         {
           $annotation->setKeyname($fieldname);
           $entityAnnotation->addFieldAnnotation($annotation);
+        }
+      }
+    }
+  }
+
+  /**
+   * @param ClassMetadata $classMetadata
+   * @param EntityAnnotations $entityAnnotation
+   *
+   * @return void
+   * @throws \ReflectionException
+   */
+  public function addAnnotationsByProperties(ClassMetadata $classMetadata, EntityAnnotations $entityAnnotation)
+  {
+    if($classMetadata->getReflectionClass()->getName() === "App\Entity\School\Campus")
+    {
+      foreach($classMetadata->getReflectionClass()->getProperties() as $property)
+      {
+        if(!array_key_exists($property->name, $classMetadata->fieldMappings))
+        {
+          foreach($this->reader->getPropertyAnnotations($property) as $annotation)
+          {
+            if(AustralTools::usedImplements($annotation, AustralEntityAnnotationInterface::class))
+            {
+              $annotation->setKeyname($property->name);
+              $entityAnnotation->addFieldAnnotation($annotation);
+            }
+          }
         }
       }
     }
