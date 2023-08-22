@@ -18,7 +18,7 @@
     "doctrine/annotations":                   "^1.0",
     "doctrine/doctrine-bundle":               "^2.2",
     "doctrine/doctrine-migrations-bundle":    "^3.0",
-    "doctrine/orm":                           "^2.7",
+    "doctrine/orm":                           "2.15.*",
     "symfony/string":                         "^5.4",
 
     "gedmo/doctrine-extensions":              "^3.0",
