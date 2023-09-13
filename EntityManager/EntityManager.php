@@ -419,7 +419,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    *
    * @return ArrayCollection|array
    */
-  public function selectAll(string $orderByAttribute = 'id', string $orderByType = "ASC", \Closure $closure = null)
+  public function selectAll(string $orderByAttribute = 'id', string $orderByType = "ASC", \Closure $closure = null): array
   {
     return $this->getRepository()->selectAll($orderByAttribute, $orderByType, $closure);
   }
@@ -439,7 +439,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    *
    * @return ArrayCollection|array
    */
-  public function selectByQueryBuilder(QueryBuilder $queryBuilder)
+  public function selectByQueryBuilder(QueryBuilder $queryBuilder): array
   {
     return $this->getRepository()->selectByQueryBuilder($queryBuilder);
   }
@@ -463,6 +463,16 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   public function paginatorByQueryBuilder(QueryBuilder $queryBuilder): array
   {
     return $this->getRepository()->paginatorByQueryBuilder($queryBuilder);
+  }
+
+  /**
+   * @param \Closure $closure
+   * @param string $alias
+   * @return array
+   */
+  public function paginatorByClosure(\Closure $closure, string $alias = "root"): array
+  {
+    return $this->getRepository()->paginatorByClosure($closure, $alias);
   }
 
   /**

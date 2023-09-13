@@ -140,7 +140,7 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
    * @return ArrayCollection|array
    * @throws \Doctrine\ORM\Query\QueryException
    */
-  public function selectAll(string $orderByAttribute = 'id', string $orderByType = "ASC", \Closure $closure = null)
+  public function selectAll(string $orderByAttribute = 'id', string $orderByType = "ASC", \Closure $closure = null): array
   {
     $queryBuilder = $this->createQueryBuilder('root');
     if(strpos($orderByAttribute, ".") === false)
@@ -189,7 +189,7 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
    *
    * @return ArrayCollection|array
    */
-  public function selectByQueryBuilder(QueryBuilder $queryBuilder)
+  public function selectByQueryBuilder(QueryBuilder $queryBuilder): array
   {
     try {
       $objects = $queryBuilder->getQuery()->execute();
@@ -205,19 +205,14 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
    *
    * @return ArrayCollection|array
    */
-  public function selectByClosure(\Closure $closure, string $alias = "root")
+  public function selectByClosure(\Closure $closure, string $alias = "root"): array
   {
     $queryBuilder = $this->createQueryBuilder($alias);
     if($closure instanceof \Closure)
     {
       $closure->call($this, $queryBuilder);
     }
-    try {
-      $objects = $queryBuilder->getQuery()->execute();
-    } catch (NoResultException $e) {
-      $objects = array();
-    }
-    return $objects;
+    return $this->selectByQueryBuilder($queryBuilder);
   }
 
   /**
@@ -241,6 +236,23 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
       );
     }
     return $return;
+  }
+
+  /**
+   * @param \Closure $closure
+   * @param string $alias
+   *
+   * @return ArrayCollection|array
+   * @throws \Exception
+   */
+  public function paginatorByClosure(\Closure $closure, string $alias = "root"): array
+  {
+    $queryBuilder = $this->createQueryBuilder($alias);
+    if($closure instanceof \Closure)
+    {
+      $closure->call($this, $queryBuilder);
+    }
+    return $this->paginatorByQueryBuilder($queryBuilder);
   }
 
   /**

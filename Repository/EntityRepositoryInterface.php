@@ -69,7 +69,7 @@ interface EntityRepositoryInterface
    *
    * @return ArrayCollection|array
    */
-  public function selectAll(string $orderByAttribute = 'id', string $orderByType = "ASC", \Closure $closure = null);
+  public function selectAll(string $orderByAttribute = 'id', string $orderByType = "ASC", \Closure $closure = null): array;
 
   /**
    * @return int
@@ -83,7 +83,7 @@ interface EntityRepositoryInterface
    *
    * @return ArrayCollection|array
    */
-  public function selectByQueryBuilder(QueryBuilder $queryBuilder);
+  public function selectByQueryBuilder(QueryBuilder $queryBuilder): array;
 
   /**
    * @param \Closure $closure
@@ -91,7 +91,7 @@ interface EntityRepositoryInterface
    *
    * @return ArrayCollection|array
    */
-  public function selectByClosure(\Closure $closure, string $alias = "root");
+  public function selectByClosure(\Closure $closure, string $alias = "root"): array;
 
   /**
    * @param QueryBuilder $queryBuilder
@@ -99,6 +99,13 @@ interface EntityRepositoryInterface
    * @return array
    */
   public function paginatorByQueryBuilder(QueryBuilder $queryBuilder): array;
+
+  /**
+   * @param \Closure $closure
+   * @param string $alias
+   * @return array
+   */
+  public function paginatorByClosure(\Closure $closure, string $alias = "root"): array;
 
   /**
    * @param QueryBuilder $queryBuilder
