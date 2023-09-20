@@ -94,6 +94,14 @@ interface EntityRepositoryInterface
   public function selectByClosure(\Closure $closure, string $alias = "root"): array;
 
   /**
+   * @param \Closure $closure
+   * @param string $alias
+   *
+   * @return bool
+   */
+  public function deleteByClosure(\Closure $closure, string $alias = "root"): bool;
+
+  /**
    * @param QueryBuilder $queryBuilder
    *
    * @return array

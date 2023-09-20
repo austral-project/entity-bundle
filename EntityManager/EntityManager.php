@@ -450,9 +450,20 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    *
    * @return ArrayCollection|array
    */
-  public function selectByClosure(\Closure $closure, string $alias = "root")
+  public function selectByClosure(\Closure $closure, string $alias = "root"): array
   {
     return $this->getRepository()->selectByClosure($closure, $alias);
+  }
+
+  /**
+   * @param \Closure $closure
+   * @param string $alias
+   *
+   * @return bool
+   */
+  public function deleteByClosure(\Closure $closure, string $alias = "root"): bool
+  {
+    return $this->getRepository()->deleteByClosure($closure, $alias);
   }
 
   /**

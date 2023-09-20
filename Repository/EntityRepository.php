@@ -216,6 +216,30 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
   }
 
   /**
+   * @param \Closure $closure
+   * @param string $alias
+   *
+   * @return bool
+   */
+  public function deleteByClosure(\Closure $closure, string $alias = "root"): bool
+  {
+    $queryBuilder = $this->createQueryBuilder($alias);
+    if($closure instanceof \Closure)
+    {
+      $closure->call($this, $queryBuilder);
+    }
+    try {
+      $queryBuilder->delete($queryBuilder->getEntityClassname(), $alias)
+        ->getQuery()
+        ->execute();
+      return true;
+    }
+    catch (\Exception) {
+      return false;
+    }
+  }
+
+  /**
    * @param QueryBuilder $queryBuilder
    *
    * @return array
