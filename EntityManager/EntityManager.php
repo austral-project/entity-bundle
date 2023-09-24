@@ -41,7 +41,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   protected DoctrineEntityManagerInterface $em;
 
   /**
-   * @var ?EntityRepositoryInterface
+   * @var EntityRepositoryInterface|null
    */
   protected $repository = null;
 
