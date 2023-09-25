@@ -26,16 +26,19 @@ services:
       - "@austral.tools.debug"
 
 ##### Austral Event Subscriber
+  Austral\EntityBundle\EventSubscriber\EntityManagerEventSubscriber:  "@austral.entity.manager.event_subscriber"
   austral.entity.manager.event_subscriber:
     class:        Austral\EntityBundle\EventSubscriber\EntityManagerEventSubscriber
     tags:
       - { name: kernel.event_subscriber}
 
+  Austral\EntityBundle\EventSubscriber\EntityMappingEventSubscriber:  "@austral.entity.mapping.event_subscriber"
   austral.entity.mapping.event_subscriber:
     class:        Austral\EntityBundle\EventSubscriber\EntityMappingEventSubscriber
     tags:
       - { name: kernel.event_subscriber }
 
+  Austral\EntityBundle\EventSubscriber\QueryBuilderEventSubscriber: "@austral.entity.query_builder.event_subscriber"
   austral.entity.query_builder.event_subscriber:
     class:        Austral\EntityBundle\EventSubscriber\QueryBuilderEventSubscriber
     tags:
@@ -48,6 +51,7 @@ services:
     arguments:    [ "@doctrine.orm.entity_manager",  "@event_dispatcher" ]
 
 ##### Annotation Listener Kernel
+  Austral\EntityBundle\Listener\EntityMappingListener:  "@austral.entity.mapping.listener"
   austral.entity.mapping.listener:
     class:          Austral\EntityBundle\Listener\EntityMappingListener
     arguments:
