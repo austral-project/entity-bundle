@@ -5,10 +5,12 @@ services:
     public:         true
 
 ##### Services #####
+  Austral\EntityBundle\Services\InitialiseBundleEntities: "@austral.entity.initialise-bundle"
   austral.entity.initialise-bundle:
     class:        Austral\EntityBundle\Services\InitialiseBundleEntities
     arguments:    ["@service_container"]
 
+  Austral\EntityBundle\EntityAnnotation\EntitiesAnnotations:  "@austral.entity.entities-annotations"
   austral.entity.entities-annotations:
     class:        Austral\EntityBundle\EntityAnnotation\EntitiesAnnotations
     arguments:
@@ -16,6 +18,7 @@ services:
       - "@annotation_reader"
       - "@austral.tools.debug"
 
+  Austral\EntityBundle\Mapping\Mapping: "@austral.entity.mapping"
   austral.entity.mapping:
     class:        Austral\EntityBundle\Mapping\Mapping
     arguments:
@@ -39,6 +42,7 @@ services:
       - { name: kernel.event_subscriber }
 
 ##### Austral Entity Manager
+  Austral\EntityBundle\EntityManager\EntityManager: "@austral.entity_manager"
   austral.entity_manager:
     class:        Austral\EntityBundle\EntityManager\EntityManager
     arguments:    [ "@doctrine.orm.entity_manager",  "@event_dispatcher" ]
