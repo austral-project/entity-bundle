@@ -226,7 +226,7 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
     $queryBuilder = $this->createQueryBuilder($alias);
     if($closure instanceof \Closure)
     {
-      $closure->call($this, $queryBuilder);
+      $queryBuilder = $closure->call($this, $queryBuilder);
     }
     try {
       $queryBuilder->delete($queryBuilder->getEntityClassname(), $alias)
