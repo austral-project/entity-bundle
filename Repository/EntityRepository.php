@@ -232,15 +232,28 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
         $queryBuilder = $queryBuilderReturn;
       }
     }
-    try {
+    $queryBuilderIds = clone $queryBuilder;
+
+    $ids = $queryBuilderIds->select("root.id")
+      ->indexBy("root","root.id")
+      ->getQuery()
+      ->getArrayResult();
+
+    if($ids) {
+      $queryBuilderDelete = $this->createQueryBuilder($alias);
+      $queryBuilderDelete->where("root.id in (:ids)")
+        ->setParameter("ids", array_keys($ids))
+        ->delete($queryBuilder->getEntityClassname(), $alias)
+        ->getQuery()
+        ->execute();
+    }
+    else
+    {
       $queryBuilder->delete($queryBuilder->getEntityClassname(), $alias)
         ->getQuery()
         ->execute();
-      return true;
     }
-    catch (\Exception $exception) {
-      return false;
-    }
+    return true;
   }
 
   /**
