@@ -247,12 +247,6 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
         ->getQuery()
         ->execute();
     }
-    else
-    {
-      $queryBuilder->delete($queryBuilder->getEntityClassname(), $alias)
-        ->getQuery()
-        ->execute();
-    }
     return true;
   }
 
