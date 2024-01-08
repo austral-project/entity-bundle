@@ -84,6 +84,7 @@ Class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
     {
       $this->repository = $em->getRepository($class);
       $this->class = $em->getClassMetadata($class)->getName();
+      $this->repository->setDispatcher($dispatcher);
     }
     $this->dispatcher = $dispatcher;
   }
