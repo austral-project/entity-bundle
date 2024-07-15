@@ -13,13 +13,13 @@
     }
   ],
   "require": {
-    "php":                                    "^7.4 || ^8.0",
+    "php":                                    "^7.4 || ^8.0 || ^8.1 || ^8.2",
 
     "doctrine/annotations":                   "^1.0",
     "doctrine/doctrine-bundle":               "^2.2",
     "doctrine/doctrine-migrations-bundle":    "^3.0",
     "doctrine/orm":                           "2.15.*",
-    "symfony/string":                         "^5.4",
+    "symfony/string":                         "^5.4 || ^6.4",
 
     "gedmo/doctrine-extensions":              "^3.0",
     "ramsey/uuid":                            "^3.0",
