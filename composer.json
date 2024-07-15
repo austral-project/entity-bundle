@@ -13,9 +13,8 @@
     }
   ],
   "require": {
-    "php":                                    "^7.4 || ^8.0 || ^8.1 || ^8.2",
+    "php":                                    "^8.0 || ^8.1 || ^8.2",
 
-    "doctrine/annotations":                   "^1.0",
     "doctrine/doctrine-bundle":               "^2.2",
     "doctrine/doctrine-migrations-bundle":    "^3.0",
     "doctrine/orm":                           "^3.2",
