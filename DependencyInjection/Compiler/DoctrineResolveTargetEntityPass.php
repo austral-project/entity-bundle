@@ -25,7 +25,7 @@ class DoctrineResolveTargetEntityPass implements CompilerPassInterface
   /**
    * {@inheritdoc}
    */
-  public function process(ContainerBuilder $container)
+  public function process(ContainerBuilder $container): void
   {
     $definition = $container->findDefinition('doctrine.orm.listeners.resolve_target_entity');
     if (version_compare(Version::VERSION, '2.5.0-DEV') < 0) {
