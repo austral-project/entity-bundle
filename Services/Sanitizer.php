@@ -32,7 +32,6 @@ class Sanitizer
 
   public function sanitize(object $entity): void
   {
-    dump($this->sanitizers);
     $reflectionClass = new \ReflectionClass($entity);
 
     foreach ($reflectionClass->getProperties() as $property) {

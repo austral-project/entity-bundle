@@ -9,7 +9,6 @@
  */
 namespace Austral\EntityBundle\Annotation;
 
-use Austral\EntityFileBundle\Annotation\EntityFileAnnotationInterface;
 use Doctrine\Common\Annotations\Annotation\NamedArgumentConstructor;
 use Doctrine\Common\Annotations\Annotation;
 use Doctrine\Common\Annotations\Annotation\Target;
@@ -19,7 +18,7 @@ use Doctrine\Common\Annotations\Annotation\Target;
  * @NamedArgumentConstructor()
  * @Target({"PROPERTY", "ANNOTATION"})
  */
-final class AustralEntitySanitize extends AustralEntityAnnotation implements EntityFileAnnotationInterface
+final class AustralEntitySanitize extends AustralEntityAnnotation
 {
   /**
    * @var string|null
