@@ -11,13 +11,15 @@
 
 namespace Austral\EntityBundle\EventSubscriber;
 
-use Austral\EntityBundle\EntityAnnotation\EntityAnnotations;
+use Austral\EntityBundle\EntityAttributes\EntityAttributes;
 use Austral\EntityBundle\Event\EntityMappingEvent;
 use Austral\EntityBundle\Mapping\EntityMapping;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Austral EntityAnnotation EventSubscriber.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -27,7 +29,7 @@ class EntityMappingEventSubscriber implements EventSubscriberInterface
   /**
    * @var string
    */
-  protected string $debugContainer = "entity.annotation.event";
+  protected string $debugContainer = "entity.attribute.event";
 
   /**
    * ControllerListener constructor.
@@ -39,7 +41,7 @@ class EntityMappingEventSubscriber implements EventSubscriberInterface
 
 
   /**
-   * @return array[]
+   * @return array<string, string|array{0: string, 1: int}|list<array{0: string, 1?: int}>>
    */
   public static function getSubscribedEvents(): array
   {
@@ -49,20 +51,23 @@ class EntityMappingEventSubscriber implements EventSubscriberInterface
   }
 
   /**
-   * @param EntityMappingEvent $annotationEvent
+   * @param EntityMappingEvent<T> $attributeEvent
    *
    * @return void
    */
-  public function initialiseMapping(EntityMappingEvent $annotationEvent)
+  public function initialiseMapping(EntityMappingEvent $attributeEvent): void
   {
     /**
-     * @var EntityAnnotations $entityAnnotation
+     * @var EntityAttributes<T> $entityAttributes
      */
-    foreach($annotationEvent->getEntitiesAnnotations()->all() as $entityAnnotation)
+    foreach($attributeEvent->getEntitiesAttributes()->all() as $entityAttributes)
     {
-      if(($entityAnnotation->getClassAnnotations() || $entityAnnotation->getFieldsAnnotations()) && !$annotationEvent->getMapping()->getEntityMapping($entityAnnotation->getClassname()))
+      if(($entityAttributes->getClassAttributes() || $entityAttributes->getFieldsAttributes()) && !$attributeEvent->getMapping()->getEntityMapping($entityAttributes->getClassname()))
       {
-        $annotationEvent->getMapping()->addEntityMapping($entityAnnotation->getClassname(), new EntityMapping($entityAnnotation->getClassname(), $entityAnnotation->getSlugger()));
+        $entityMapping = new EntityMapping($entityAttributes->getClassname(), $entityAttributes->getSlugger());
+        $attributeEvent
+          ->getMapping()
+          ->addEntityMapping($entityAttributes->getClassname(), $entityMapping);
       }
     }
   }

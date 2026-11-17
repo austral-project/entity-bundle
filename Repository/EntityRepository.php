@@ -10,11 +10,13 @@
 
 namespace Austral\EntityBundle\Repository;
 
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
+use Austral\EntityBundle\Model\PaginatorResult;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\ORM\EntityRepository as BaseEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -22,36 +24,44 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Austral Abstract Repository.
+ * @template T of object
+ *
+ * @extends \Doctrine\ORM\EntityRepository<T>
+ * @implements EntityRepositoryInterface<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @abstract
  */
-class EntityRepository extends BaseEntityRepository implements EntityRepositoryInterface
+abstract class EntityRepository extends \Doctrine\ORM\EntityRepository  implements EntityRepositoryInterface
 {
 
   /** @var EventDispatcherInterface|null */
   private ?EventDispatcherInterface $dispatcher = null;
 
   /**
-   * Creates a new QueryBuilder instance that is prepopulated for this entity name.
-   *
    * @param string      $alias
    * @param string|null $indexBy
    *
-   * @return AustralQueryBuilder
+   * @return AustralQueryBuilder<T>
    */
-  public function createQueryBuilder($alias, $indexBy = null)
+  public function createQueryBuilder(string $alias, ?string $indexBy = null): AustralQueryBuilder
   {
-    return (new AustralQueryBuilder($this->_em, $this->getClassName(), $this->dispatcher))
-      ->select($alias)
-      ->from($this->_entityName, $alias, $indexBy);
+    /** @var class-string $entityName */
+    $entityName = $this->getEntityName();
+
+    /** @var AustralQueryBuilder<T> $australQueryBuilder */
+    $australQueryBuilder = new AustralQueryBuilder($this->getEntityManager(), $this->getClassName(), $this->dispatcher);
+    $australQueryBuilder->select($alias);
+    $australQueryBuilder->from($entityName, $alias, $indexBy);
+    return $australQueryBuilder;
   }
 
   /**
    * @param EventDispatcherInterface|null $dispatcher
    *
-   * @return EntityRepository
+   * @return $this
    */
-  public function setDispatcher(?EventDispatcherInterface $dispatcher): EntityRepository
+  public function setDispatcher(?EventDispatcherInterface $dispatcher): self
   {
     if(!$this->dispatcher)
     {
@@ -65,31 +75,47 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
    */
   public function isPgsql(): bool
   {
-    return ($this->_em->getConnection()->getDriver() instanceof \Doctrine\DBAL\Driver\PDO\PgSQL\Driver);
+    return ($this->getEntityManager()->getConnection()->getDriver() instanceof \Doctrine\DBAL\Driver\PDO\PgSQL\Driver);
   }
 
   /**
-   * @param string $id
-   * @param \Closure|null $closure
-   *
-   * @return mixed
-   * @throws NonUniqueResultException
+   * @inheritDoc
    */
-  public function retreiveById(string $id, \Closure $closure = null)
+  public function retrieveById(string $id, ?callable $closure = null): ?EntityInterface
   {
-    return $this->retreiveByKey("id", $id, $closure);
+    return $this->retrieveByKey("id", $id, $closure);
   }
 
   /**
-   * @param \Closure|null $closure
-   *
-   * @return mixed
-   * @throws NonUniqueResultException
+   * @inheritDoc
    */
-  public function retreiveByClosure(\Closure $closure = null)
+  public function retrieveByKey(string $key, string $value, ?callable $closure = null): ?EntityInterface
+  {
+    $queryBuilder = $this->createQueryBuilder('root')
+      ->where("root.{$key} = :{$key}")
+      ->setParameter("{$key}", $value);
+
+    $queryBuilder = $this->queryBuilderExtends("retrieve-by-key", $queryBuilder);
+    if($closure instanceof \Closure)
+    {
+      $closure->call($this, $queryBuilder);
+    }
+    $query = $queryBuilder->getQuery();
+    try {
+      $object = $query->getSingleResult();
+    } catch (NoResultException $e) {
+      $object = null;
+    }
+    return $object;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function retrieveByClosure(?callable $closure = null): ?EntityInterface
   {
     $queryBuilder = $this->createQueryBuilder('root');
-    $queryBuilder = $this->queryBuilderExtends("retreive-by-closure", $queryBuilder);
+    $queryBuilder = $this->queryBuilderExtends("retrieve-by-closure", $queryBuilder);
     if($closure instanceof \Closure)
     {
       $closure->call($this, $queryBuilder);
@@ -105,45 +131,12 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
   }
 
   /**
-   * @param string $key
-   * @param string $value
-   * @param \Closure|null $closure
-   *
-   * @return mixed
-   * @throws NonUniqueResultException
+   * @inheritDoc
    */
-  public function retreiveByKey(string $key, string $value, \Closure $closure = null)
-  {
-    $queryBuilder = $this->createQueryBuilder('root')
-      ->where("root.{$key} = :{$key}")
-      ->setParameter("{$key}", $value);
-
-    $queryBuilder = $this->queryBuilderExtends("retreive-by-key", $queryBuilder);
-    if($closure instanceof \Closure)
-    {
-      $closure->call($this, $queryBuilder);
-    }
-    $query = $queryBuilder->getQuery();
-    try {
-      $object = $query->getSingleResult();
-    } catch (NoResultException $e) {
-      $object = null;
-    }
-    return $object;
-  }
-
-  /**
-   * @param string $orderByAttribute
-   * @param string $orderByType
-   * @param \Closure|null $closure
-   *
-   * @return ArrayCollection|array
-   * @throws \Doctrine\ORM\Query\QueryException
-   */
-  public function selectAll(string $orderByAttribute = 'id', string $orderByType = "ASC", \Closure $closure = null): array
+  public function selectAll(string $orderByAttribute = 'id', string $orderByType = "ASC", ?callable $closure = null): ?Collection
   {
     $queryBuilder = $this->createQueryBuilder('root');
-    if(strpos($orderByAttribute, ".") === false)
+    if(!str_contains($orderByAttribute, "."))
     {
       $orderByAttribute = "root.".$orderByAttribute;
     }
@@ -158,54 +151,28 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
     try {
       $objects = $query->execute();
     } catch (NoResultException $e) {
-      $objects = array();
+      $objects = [];
     }
     return $objects;
   }
 
   /**
-   * @param \Closure|null $closure
-   *
-   * @return int
-   * @throws NoResultException
-   * @throws NonUniqueResultException
+   * @inheritDoc
    */
-  public function countAll(\Closure $closure = null): int
-  {
-    $queryBuilder = $this->createQueryBuilder('root')
-      ->select("COUNT(DISTINCT(root.id))");
-    $queryBuilder = $this->queryBuilderExtends("count-all", $queryBuilder);
-    if($closure instanceof \Closure)
-    {
-      $closure->call($this, $queryBuilder);
-    }
-    return $queryBuilder
-      ->getQuery()
-      ->getSingleScalarResult();
-  }
-
-  /**
-   * @param QueryBuilder $queryBuilder
-   *
-   * @return ArrayCollection|array
-   */
-  public function selectByQueryBuilder(QueryBuilder $queryBuilder): array
+  public function selectByQueryBuilder(QueryBuilder $queryBuilder): ?Collection
   {
     try {
       $objects = $queryBuilder->getQuery()->execute();
     } catch (NoResultException $e) {
-      $objects = array();
+      $objects = new ArrayCollection();
     }
     return $objects;
   }
 
   /**
-   * @param \Closure $closure
-   * @param string $alias
-   *
-   * @return ArrayCollection|array
+   * @inheritDoc
    */
-  public function selectByClosure(\Closure $closure, string $alias = "root"): array
+  public function selectByClosure(?callable $closure, string $alias = "root"): ?Collection
   {
     $queryBuilder = $this->createQueryBuilder($alias);
     $queryBuilder = $this->queryBuilderExtends("select-by-closure", $queryBuilder);
@@ -217,12 +184,9 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
   }
 
   /**
-   * @param \Closure $closure
-   * @param string $alias
-   *
-   * @return bool
+   * @inheritDoc
    */
-  public function deleteByClosure(\Closure $closure, string $alias = "root"): bool
+  public function deleteByClosure(?callable $closure, string $alias = "root"): bool
   {
     $queryBuilder = $this->createQueryBuilder($alias);
     if($closure instanceof \Closure)
@@ -252,36 +216,23 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
   }
 
   /**
-   * @param QueryBuilder $queryBuilder
-   *
-   * @return array
-   * @throws \Exception
+   * @inheritDoc
    */
-  public function paginatorByQueryBuilder(QueryBuilder $queryBuilder): array
+  public function paginatorByQueryBuilder(QueryBuilder $queryBuilder): PaginatorResult
   {
     try {
       $paginator = new Paginator($queryBuilder->getQuery(), true);
-      $return = array(
-        "count"     =>  $paginator->count(),
-        "objects"   =>  $paginator->getIterator()->getArrayCopy()
-      );
-    } catch (NoResultException $e) {
-      $return = array(
-        "count"     =>  0,
-        "objects"   =>  array()
-      );
+      $paginatorResult = new PaginatorResult($paginator);
+    } catch (\Exception $e) {
+      $paginatorResult = new PaginatorResult(null, $e);
     }
-    return $return;
+    return $paginatorResult;
   }
 
   /**
-   * @param \Closure $closure
-   * @param string $alias
-   *
-   * @return ArrayCollection|array
-   * @throws \Exception
+   * @inheritDoc
    */
-  public function paginatorByClosure(\Closure $closure, string $alias = "root"): array
+  public function paginatorByClosure(?callable $closure, string $alias = "root"): PaginatorResult
   {
     $queryBuilder = $this->createQueryBuilder($alias);
     if($closure instanceof \Closure)
@@ -292,39 +243,41 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
   }
 
   /**
-   * @param QueryBuilder $queryBuilder
-   *
-   * @return int
-   * @throws NonUniqueResultException
+   * @inheritDoc
    */
-  public function countByQueryBuilder(QueryBuilder $queryBuilder): int
+  public function countAll(?callable $closure = null): int
   {
-    try {
-      $objects = $queryBuilder->select("COUNT(root)")->getQuery()->getSingleScalarResult();
-    } catch (NoResultException $e) {
-      $objects = array();
+    $queryBuilder = $this->createQueryBuilder('root')->select("COUNT(DISTINCT(root.id))");
+    $queryBuilder = $this->queryBuilderExtends("count-all", $queryBuilder);
+    if($closure instanceof \Closure)
+    {
+      $closure->call($this, $queryBuilder);
     }
-    return $objects;
+    $count =  $queryBuilder->getQuery()->getSingleScalarResult();
+    return is_integer($count) ? $count : 0;
   }
 
   /**
-   * @param $name
-   * @param QueryBuilder $queryBuilder
-   *
-   * @return QueryBuilder
+   * @inheritDoc
    */
-  public function queryBuilderExtends($name, QueryBuilder $queryBuilder): QueryBuilder
+  public function countByQueryBuilder(QueryBuilder $queryBuilder): int
+  {
+    $count = $queryBuilder->select("COUNT(root)")->getQuery()->getSingleScalarResult();
+    return is_integer($count) ? $count : 0;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function queryBuilderExtends($name, AustralQueryBuilder $queryBuilder): AustralQueryBuilder
   {
     return $queryBuilder;
   }
 
   /**
-   * @param EntityInterface $object
-   * @param \Closure|null $closure
-   *
-   * @return array
+   * @inheritDoc
    */
-  public function selectArrayLanguages(EntityInterface $object, \Closure $closure = null): array
+  public function selectArrayLanguages(EntityInterface $object, ?callable $closure = null): array
   {
     $queryBuilder = $this->createQueryBuilder('root');
     $queryBuilder->where("root.id = :id")
@@ -339,7 +292,7 @@ class EntityRepository extends BaseEntityRepository implements EntityRepositoryI
     try {
       $objects = $query->getArrayResult();
     } catch (NoResultException $e) {
-      $objects = array();
+      $objects = [];
     }
     return $objects;
   }

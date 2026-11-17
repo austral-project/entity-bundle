@@ -9,12 +9,14 @@
  */
 
 namespace Austral\EntityBundle\Event;
-use Austral\EntityBundle\EntityAnnotation\EntitiesAnnotations;
+use Austral\EntityBundle\EntityAttributes\EntitiesAttributes;
 use Austral\EntityBundle\Mapping\Mapping;
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Austral Http Event.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @abstract
  */
@@ -24,28 +26,28 @@ class EntityMappingEvent extends Event
   const EVENT_AUSTRAL_ENTITY_INITIALISE_MAPPING = "austral.event.entity.initialise.mapping";
 
   /**
-   * @var Mapping
+   * @var Mapping<T>
    */
   private Mapping $mapping;
 
   /**
-   * @var EntitiesAnnotations
+   * @var EntitiesAttributes<T>
    */
-  private EntitiesAnnotations $entitiesAnnotations;
+  private EntitiesAttributes $entitiesAttributes;
 
 
   /**
-   * @param Mapping $mapping
-   * @param EntitiesAnnotations $entitiesAnnotations
+   * @param Mapping<T> $mapping
+   * @param EntitiesAttributes<T> $entitiesAttributes
    */
-  public function __construct(Mapping $mapping, EntitiesAnnotations $entitiesAnnotations)
+  public function __construct(Mapping $mapping, EntitiesAttributes $entitiesAttributes)
   {
     $this->mapping = $mapping;
-    $this->entitiesAnnotations = $entitiesAnnotations;
+    $this->entitiesAttributes = $entitiesAttributes;
   }
 
   /**
-   * @return Mapping
+   * @return Mapping<T>
    */
   public function getMapping(): Mapping
   {
@@ -53,32 +55,32 @@ class EntityMappingEvent extends Event
   }
 
   /**
-   * @param Mapping $mapping
+   * @param Mapping<T> $mapping
    *
-   * @return EntityMappingEvent
+   * @return $this
    */
-  public function setMapping(Mapping $mapping): EntityMappingEvent
+  public function setMapping(Mapping $mapping): self
   {
     $this->mapping = $mapping;
     return $this;
   }
 
   /**
-   * @return EntitiesAnnotations
+   * @return EntitiesAttributes<T>
    */
-  public function getEntitiesAnnotations (): EntitiesAnnotations
+  public function getEntitiesAttributes (): EntitiesAttributes
   {
-    return $this->entitiesAnnotations;
+    return $this->entitiesAttributes;
   }
 
   /**
-   * @param EntitiesAnnotations $entitiesAnnotations
+   * @param EntitiesAttributes<T> $entitiesAttributes
    *
-   * @return EntityMappingEvent
+   * @return $this
    */
-  public function setEntitiesAnnotations (EntitiesAnnotations $entitiesAnnotations): EntityMappingEvent
+  public function setEntitiesAttributes (EntitiesAttributes $entitiesAttributes): self
   {
-    $this->entitiesAnnotations = $entitiesAnnotations;
+    $this->entitiesAttributes = $entitiesAttributes;
     return $this;
   }
 

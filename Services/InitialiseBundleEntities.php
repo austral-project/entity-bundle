@@ -10,6 +10,7 @@
 
 namespace Austral\EntityBundle\Services;
 
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -34,8 +35,9 @@ class InitialiseBundleEntities
   /**
    * InitialiseBundleEntities constructor.
    */
-  public function __construct(ContainerInterface $container)
-  {
+  public function __construct(
+    #[Autowire(service: 'service_container')] ContainerInterface $container
+  ) {
     $this->container = $container;
     $this->filesystem = new Filesystem();
   }
@@ -47,14 +49,18 @@ class InitialiseBundleEntities
   public function init(): InitialiseBundleEntities
   {
     $bundles = $this->container->getParameter("kernel.bundles");
+    if(!is_array($bundles)) {
+      $bundles = [];
+    }
     $rootPathEntities = $this->container->getParameter("austral.entity.initialise-bundle.path");
-    $skeletonDirs = array();
+    $rootPathEntities = is_string($rootPathEntities) ? $rootPathEntities : "";
+    $skeletonDirs = [];
     foreach($bundles as $bundleName => $bundle)
     {
       if(preg_match('/Austral(.*Bundle)/iuU', $bundleName, $matches))
       {
         $reflectionClass = new \ReflectionClass($bundle);
-        $bundleDir = dirname($reflectionClass->getFileName());
+        $bundleDir = dirname($reflectionClass->getFileName() ? : "");
         $skeletonDir = "{$bundleDir}/Skeleton/Entity";
         if(file_exists($skeletonDir) && is_dir($skeletonDir))
         {
@@ -76,13 +82,15 @@ class InitialiseBundleEntities
         {
           $this->filesystem->mkdir($entitiesPath);
         }
-        foreach (scandir($skeletonDir) as $file)
+        $files = scandir($skeletonDir);
+        foreach (is_array($files) ? $files : [] as $file)
         {
           if(!in_array($file, array('.', "..")))
           {
             if(!file_exists("{$entitiesPath}/{$file}"))
             {
               $fileContent = file_get_contents("{$skeletonDir}/{$file}");
+              $fileContent = is_string($fileContent) ? $fileContent : "";
               $fileContent = str_replace("##php##", "<?php", $fileContent);
               file_put_contents("{$entitiesPath}/{$file}", $fileContent);
             }

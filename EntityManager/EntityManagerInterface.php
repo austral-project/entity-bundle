@@ -12,38 +12,66 @@ namespace Austral\EntityBundle\EntityManager;
 
 
 use Austral\EntityBundle\Event\EntityManagerEvent;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * Austral Interface EntityManager.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  */
 interface EntityManagerInterface
 {
 
   /**
-   * @return string
+   * @return class-string<T>|null
    */
-  public function getClass(): string;
+  public function getClass(): ?string;
 
   /**
-   * @param string $class
+   * @param class-string<T> $class
    *
    * @return $this
    */
-  public function setClass(string $class): EntityManagerInterface;
+  public function setClass(string $class): self;
 
   /**
-   * @param $event
+   * @param T $event
    * @param string $eventName
    */
-  public function dispatch($event, string $eventName);
+  public function dispatch(object $event, string $eventName): void;
 
   /**
-   * @param EntityManagerEvent $entityManagerEvent
+   * @param EntityManagerEvent<T> $entityManagerEvent
    *
    * @return $this
    */
-  public function addEntitytManagerEvent(EntityManagerEvent $entityManagerEvent): EntityManagerInterface;
+  public function addEntityManagerEvent(EntityManagerEvent $entityManagerEvent): self;
+
+  /**
+   * @return array<string, mixed>
+   */
+  public function getFieldsMappingAll(): array;
+
+  /**
+   * @return array<string, mixed>
+   */
+  public function getFieldsMappingWithAssociation(): array;
+
+  /**
+   * @param string|null $class
+   *
+   * @return array<string, mixed>
+   */
+  public function getFieldsMapping(?string $class = null): array;
+
+  /**
+   * @param string $alias
+   * @param string|null $indexBy
+   *
+   * @return QueryBuilder|null
+   */
+  public function createQueryBuilder(string $alias = "root", ?string $indexBy = null): ?QueryBuilder;
 
 
 }

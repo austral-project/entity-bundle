@@ -1,4 +1,13 @@
 <?php
+/*
+ * This file is part of the Austral Entity Bundle package.
+ *
+ * (c) Austral <support@austral.dev>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Austral\EntityBundle\Sanitizer;
 
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
@@ -15,11 +24,11 @@ class AustralHtmlSanitizer implements AustralSanitizerInterface
   public function getSanitizer(): HtmlSanitizerInterface
   {
     $config = (new HtmlSanitizerConfig())
-      // Sauts de ligne & paragraphes
+      // Line breaks & paragraphs
       ->allowElement('p')
       ->allowElement('br')
 
-      // Formatage inline
+      // Inline formatting
       ->allowElement('strong')
       ->allowElement('b')
       ->allowElement('em')
@@ -27,7 +36,7 @@ class AustralHtmlSanitizer implements AustralSanitizerInterface
       ->allowElement('u')
       ->allowElement('s')
 
-      // Titres
+      // Headings
       ->allowElement('h1')
       ->allowElement('h2')
       ->allowElement('h3')
@@ -35,20 +44,20 @@ class AustralHtmlSanitizer implements AustralSanitizerInterface
       ->allowElement('h5')
       ->allowElement('h6')
 
-      // Listes
+      // Lists
       ->allowElement('ul')
       ->allowElement('ol')
       ->allowElement('li')
 
-      // Citations
+      // Quotes
       ->allowElement('blockquote')
       ->allowElement('q')
 
-      // Conteneurs
+      // Containers
       ->allowElement('div', ['class'])
       ->allowElement('span', ['class'])
 
-      // Liens
+      // Links
       ->allowElement('a', ['href', 'title', 'target', 'rel'])
       ->allowLinkSchemes(['http', 'https', 'mailto', 'tel'])
       ->allowRelativeLinks(true)

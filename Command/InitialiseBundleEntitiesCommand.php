@@ -10,8 +10,8 @@
 
 namespace Austral\EntityBundle\Command;
 
+use Austral\EntityBundle\Services\InitialiseBundleEntities;
 use Austral\ToolsBundle\Command\Base\Command;
-use Austral\ToolsBundle\Command\Exception\CommandException;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -25,11 +25,6 @@ class InitialiseBundleEntitiesCommand extends Command
 {
 
   /**
-   * @var string
-   */
-  protected static $defaultName = 'austral:entity:initialise-bundle';
-
-  /**
    * @var bool
    */
   protected bool $initEntityMapping = false;
@@ -37,7 +32,7 @@ class InitialiseBundleEntitiesCommand extends Command
   /**
    * {@inheritdoc}
    */
-  protected function configure()
+  protected function configure(): void
   {
     $this
       ->setDefinition([
@@ -56,12 +51,18 @@ EOF
    * @param InputInterface $input
    * @param OutputInterface $output
    *
-   * @throws CommandException
-   * @throws \Doctrine\ORM\NonUniqueResultException
+   * @throws \Doctrine\ORM\NonUniqueResultException|\ReflectionException
    */
-  protected function executeCommand(InputInterface $input, OutputInterface $output)
+  protected function executeCommand(InputInterface $input, OutputInterface $output): void
   {
-    $this->container->get("austral.entity.initialise-bundle")->init();
+    $initialiseBundleService =  $this->container?->get('austral.entity.initialise-bundle');
+    if (!$initialiseBundleService instanceof InitialiseBundleEntities) {
+      throw new \LogicException(sprintf(
+        "Service 'austral.entity.initialise-bundle' must implement %s",
+        InitialiseBundleEntities::class
+      ));
+    }
+    $initialiseBundleService->init();
   }
 
 

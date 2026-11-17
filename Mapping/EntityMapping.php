@@ -12,6 +12,8 @@ namespace Austral\EntityBundle\Mapping;
 
 /**
  * Austral EntityMapping.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -19,9 +21,9 @@ final Class EntityMapping
 {
 
   /**
-   * @var Mapping
+   * @var Mapping<T>|null
    */
-  protected Mapping $mapping;
+  protected ?Mapping $mapping = null;
 
   /**
    * @var string
@@ -29,37 +31,40 @@ final Class EntityMapping
   public string $slugger;
 
   /**
-   * @var string
+   * @var class-string<T>
    */
   public string $entityClass;
 
   /**
-   * @var array
+   * @var array<class-string, array<string, FieldMappingInterface<T>>>|array<null>
    */
-  protected array $fieldsMapping = array();
+  protected array $fieldsMapping = [];
 
   /**
-   * @var array
+   * @var array<class-string, EntityClassMappingInterface<T>>|array<null>
    */
-  protected array $entityClassMapping = array();
+  protected array $entityClassMapping = [];
 
   /**
-   * @var array
+   * @var array<string, array<int, class-string>>|array<null>
    */
-  protected array $fieldsMappingByClass = array();
+  protected array $fieldsMappingByClass = [];
 
 
   /**
-   * Constructor.
+   * EntityMapping constructor
+   *
+   * @param class-string<T> $entityClass
+   * @param string $slugger
+   * @param array<string, mixed> $fieldsMapping
    */
-  public function __construct(string $entityClass, string $slugger, array $fieldsMapping = array())
+  public function __construct(string $entityClass, string $slugger, array $fieldsMapping = [])
   {
     $this->entityClass = $entityClass;
     $this->slugger = $slugger;
-    /** @var array $fieldMappingsByClass */
+    /** @var array<string, FieldMappingInterface<T>> $fieldMappingsByClass */
     foreach($fieldsMapping as $fieldMappingsByClass)
     {
-      /** @var FieldMappingInterface $fieldMapping */
       foreach($fieldMappingsByClass as $fieldMapping)
       {
         $fieldMapping->setEntityMapping($this);
@@ -69,22 +74,22 @@ final Class EntityMapping
   }
 
   /**
-   * @param Mapping $mapping
+   * @param Mapping<T> $mapping
    *
    * @return $this
    */
-  public function setMapping(Mapping $mapping): EntityMapping
+  public function setMapping(Mapping $mapping): self
   {
     $this->mapping = $mapping;
     return $this;
   }
 
   /**
-   * @param EntityClassMappingInterface $entityClassMapping
+   * @param EntityClassMappingInterface<T> $entityClassMapping
    *
-   * @return EntityMapping
+   * @return $this
    */
-  public function addEntityClassMapping(EntityClassMappingInterface $entityClassMapping): EntityMapping
+  public function addEntityClassMapping(EntityClassMappingInterface $entityClassMapping): self
   {
     $entityClassMapping->setEntityMapping($this);
     $this->entityClassMapping[$entityClassMapping->getClassname()] = $entityClassMapping;
@@ -94,7 +99,7 @@ final Class EntityMapping
   /**
    * @param string $entityClassMappingClass
    *
-   * @return ?EntityClassMappingInterface
+   * @return ?EntityClassMappingInterface<T>
    */
   public function getEntityClassMapping(string $entityClassMappingClass): ?EntityClassMappingInterface
   {
@@ -113,11 +118,11 @@ final Class EntityMapping
 
   /**
    * @param string $fieldname
-   * @param FieldMappingInterface $fieldMapping
+   * @param FieldMappingInterface<T> $fieldMapping
    *
-   * @return EntityMapping
+   * @return $this
    */
-  public function addFieldMapping(string $fieldname, FieldMappingInterface $fieldMapping): EntityMapping
+  public function addFieldMapping(string $fieldname, FieldMappingInterface $fieldMapping): self
   {
     $fieldMapping->setFieldname($fieldname);
     $fieldMapping->setEntityMapping($this);
@@ -127,10 +132,10 @@ final Class EntityMapping
   }
 
   /**
-   * @param string $fieldMappingClass
+   * @param class-string $fieldMappingClass
    * @param string $fieldname
    *
-   * @return ?FieldMappingInterface
+   * @return ?FieldMappingInterface<T>
    */
   public function getFieldsMappingByFieldname(string $fieldMappingClass, string $fieldname): ?FieldMappingInterface
   {
@@ -138,28 +143,31 @@ final Class EntityMapping
   }
 
   /**
-   * @param string $fieldMappingClass
+   * @param class-string $fieldMappingClass
    *
-   * @return array
+   * @return array<string, FieldMappingInterface<T>>
    */
   public function getFieldsMappingByClass(string $fieldMappingClass): array
   {
-    return array_key_exists($fieldMappingClass, $this->getFieldsMapping()) ? $this->getFieldsMapping()[$fieldMappingClass] : array();
+    return array_key_exists($fieldMappingClass, $this->getFieldsMapping()) && $this->getFieldsMapping()[$fieldMappingClass] !== null ? $this->getFieldsMapping()[$fieldMappingClass] : [];
   }
 
   /**
    * @param string $fieldname
    *
-   * @return array
+   * @return list<FieldMappingInterface<T>>
    */
   public function getAllFieldsMappingClassByFieldname(string $fieldname): array
   {
-    $allFieldsMappingClassByFieldname = array();
-    if(array_key_exists($fieldname, $this->fieldsMappingByClass))
+    $allFieldsMappingClassByFieldname = [];
+    if(array_key_exists($fieldname, $this->fieldsMappingByClass) && $this->fieldsMappingByClass[$fieldname] != null)
     {
       foreach($this->fieldsMappingByClass[$fieldname] as $fieldMappingClass)
       {
-        $allFieldsMappingClassByFieldname[] = $this->getFieldsMappingByClass($fieldMappingClass)[$fieldname];
+        if($fieldMapping = $this->getFieldsMappingByFieldname($fieldMappingClass, $fieldname))
+        {
+          $allFieldsMappingClassByFieldname[] = $fieldMapping;
+        }
       }
     }
     return $allFieldsMappingClassByFieldname;
@@ -173,16 +181,15 @@ final Class EntityMapping
    */
   public function hasFieldnameMappingClass(string $fieldname, string $fieldMappingClass): bool
   {
-    if(array_key_exists($fieldname, $this->fieldsMappingByClass))
+    if(array_key_exists($fieldname, $this->fieldsMappingByClass) && $this->fieldsMappingByClass[$fieldname] != null)
     {
       return in_array($fieldMappingClass, $this->fieldsMappingByClass[$fieldname]);
     }
     return false;
   }
 
-
   /**
-   * @return array
+   * @return array<class-string, array<string, FieldMappingInterface<T>>>|array<null>
    */
   public function getFieldsMapping(): array
   {

@@ -11,62 +11,61 @@
 
 namespace Austral\EntityBundle\Mapping;
 
-use Austral\EntityBundle\Entity\EntityInterface;
-use Closure;
-use Exception;
+use Austral\Contracts\Entity\EntityInterface;
 
 /**
  * Austral EntityClassMappingInterface.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
- * @implements
  */
 interface EntityClassMappingInterface
 {
 
   /**
-   * @param EntityMapping $entityMapping
+   * @param EntityMapping<T> $entityMapping
    *
    * @return $this
    */
   public function setEntityMapping(EntityMapping $entityMapping): EntityClassMappingInterface;
 
   /**
-   * @return string
+   * @return class-string
    */
   public function getClassname(): string;
 
   /**
-   * @param Closure $getterObjectValueFonction
+   * @param (\Closure(EntityInterface<T>, string): mixed) $getterObjectValueFonction
    *
    * @return $this
    */
-  public function addGetterObjectValueFonction(Closure $getterObjectValueFonction): EntityClassMappingInterface;
+  public function addGetterObjectValueFonction(\Closure $getterObjectValueFonction): self;
 
   /**
-   * @param Closure $setterObjectValueFonction
+   * @param (\Closure(EntityInterface<T>, string, mixed): mixed) $setterObjectValueFonction
    *
    * @return $this
    */
-  public function addSetterObjectValueFonction(Closure $setterObjectValueFonction): EntityClassMappingInterface;
+  public function addSetterObjectValueFonction(\Closure $setterObjectValueFonction): self;
 
   /**
-   * @param EntityInterface $object
+   * @param EntityInterface<T> $object
    * @param string $fieldname
    *
    * @return mixed
-   * @throws Exception
+   * @throws \Exception
    */
-  public function getObjectValue(EntityInterface $object, string $fieldname);
+  public function getObjectValue(EntityInterface $object, string $fieldname): mixed;
 
   /**
-   * @param EntityInterface $object
+   * @param EntityInterface<T> $object
    * @param string $fieldname
    * @param null $value
    *
    * @return $this
-   * @throws Exception
+   * @throws \Exception
    */
-  public function setObjectValue(EntityInterface $object, string $fieldname, $value = null): EntityClassMappingInterface;
+  public function setObjectValue(EntityInterface $object, string $fieldname, $value = null): self;
 
 
 }

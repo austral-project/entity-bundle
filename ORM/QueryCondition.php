@@ -34,7 +34,7 @@ abstract class QueryCondition implements QueryConditionInterface
   {
     if(!in_array($conditionType, QueryConditionInterface::WHERE_ENABLED))
     {
-      throw new \Exception("{$conditionType} is not enabled for this function");
+      throw new \Exception("$conditionType is not enabled for this function");
     }
     $this->conditionType = $conditionType;
     $this->alias = $alias;

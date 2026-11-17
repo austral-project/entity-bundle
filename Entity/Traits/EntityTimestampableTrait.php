@@ -22,22 +22,19 @@ trait EntityTimestampableTrait
 {
 
   /**
-   * @var DateTime
-   *
-   * @Gedmo\Timestampable(on="create")
-   * @ORM\Column(name="created", type="datetime")
+   * @var DateTime|null
    */
-  protected $created;
+  #[Gedmo\Timestampable(on: "create")]
+  #[ORM\Column(name: "created", type: "datetime", nullable: true)]
+  protected ?DateTime $created = null;
 
   /**
-   * @var DateTime
-   *
-   * @Gedmo\Timestampable(on="update")
-   * @ORM\Column(name="updated", type="datetime")
+   * @var DateTime|null
    */
-  protected $updated;
+  #[Gedmo\Timestampable(on: "update")]
+  #[ORM\Column(name: "updated", type: "datetime", nullable: true)]
+  protected ?DateTime $updated = null;
 
-  
   /**
    * Set created
    *
@@ -45,7 +42,7 @@ trait EntityTimestampableTrait
    *
    * @return $this
    */
-  public function setCreated($created)
+  public function setCreated(DateTime $created): static
   {
     $this->created = $created;
     return $this;
@@ -58,7 +55,7 @@ trait EntityTimestampableTrait
    */
   public function getCreated(): DateTime
   {
-    return $this->created;
+    return $this->created ?: new DateTime();
   }
 
   /**
@@ -68,7 +65,7 @@ trait EntityTimestampableTrait
    *
    * @return $this
    */
-  public function setUpdated($updated)
+  public function setUpdated(DateTime $updated): static
   {
     $this->updated = $updated;
     return $this;

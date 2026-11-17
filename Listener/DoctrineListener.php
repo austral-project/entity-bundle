@@ -1,6 +1,6 @@
 <?php
 /*
- * This file is part of the Austral Seo Bundle package.
+ * This file is part of the Austral Entity Bundle package.
  *
  * (c) Austral <support@austral.dev>
  *
@@ -10,110 +10,54 @@
 
 namespace Austral\EntityBundle\Listener;
 
-use Austral\EntityBundle\Entity\EntityInterface;
-use Austral\EntityBundle\Entity\Interfaces\TranslateChildInterface;
-use Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface;
-use Austral\EntityBundle\Mapping\Mapping;
 use Austral\EntityBundle\Services\Sanitizer;
-use Austral\SeoBundle\Entity\Interfaces\UrlParameterInterface;
-use Austral\SeoBundle\Entity\Redirection;
-use Austral\SeoBundle\Entity\Traits\UrlParameterTrait;
-use Austral\SeoBundle\Entity\UrlParameter;
-use Austral\SeoBundle\Mapping\UrlParameterMapping;
-use Austral\SeoBundle\Services\RedirectionManagement;
-use Austral\SeoBundle\Services\UrlParameterManagement;
-use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
-use Doctrine\Common\EventArgs;
-use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\Event\LifecycleEventArgs;
-use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
-use Doctrine\ORM\NonUniqueResultException;
 
 /**
- * Austral Doctrine Listener.
+ * Sanitizes the #[AustralEntitySanitize] properties before insert and update.
+ * Declared in Resources/config/services.yaml (prePersist and preUpdate events).
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
-#[AsDoctrineListener(event: 'preUpdate', connection: 'default')]
-#[AsDoctrineListener(event: 'prePersist', connection: 'default')]
-class DoctrineListener implements EventSubscriber
+class DoctrineListener
 {
 
   /**
-   * @var mixed
-   */
-  protected $name;
-
-  /**
-   * @var bool
-   */
-  protected bool $postFlush = false;
-
-  /**
-   * DoctrineListener constructor.
+   * @param Sanitizer $sanitizer
    */
   public function __construct(protected Sanitizer $sanitizer)
   {
-    $parts = explode('\\', $this->getNamespace());
-    $this->name = end($parts);
-  }
-
-  /**
-   * @return array
-   */
-  public function getSubscribedEvents()
-  {
-    return array(
-      'preUpdate',
-      "prePersist"
-    );
   }
 
   /**
    * @param PrePersistEventArgs $args
    *
-   * @throws \Exception
+   * @return void
    */
-  public function prePersist(PrePersistEventArgs $args)
+  public function prePersist(PrePersistEventArgs $args): void
   {
-    /** @var EntityInterface $object */
-    $object = $args->getObject();
-    $this->sanitizer->sanitize($object);
+    $this->sanitizer->sanitize($args->getObject());
   }
 
   /**
+   * In preUpdate, Doctrine has already computed the changes: updating the entity is not enough,
+   * the sanitized value must be set in the changeset.
+   *
    * @param PreUpdateEventArgs $args
    *
-   * @throws \Exception
+   * @return void
    */
-  public function preUpdate(PreUpdateEventArgs $args)
+  public function preUpdate(PreUpdateEventArgs $args): void
   {
-    /** @var EntityInterface $object */
-    $object = $args->getObject();
-    $this->sanitizer->sanitize($object);
-  }
-
-  /**
-   * Get an event adapter to handle event specific
-   * methods
-   *
-   * @param EventArgs $args
-   *
-   * @return EventArgs
-   */
-  protected function getEventAdapter(EventArgs $args): EventArgs
-  {
-    return $args;
-  }
-
-  /**
-   * @return string
-   */
-  protected function getNamespace(): string
-  {
-    return __NAMESPACE__;
+    foreach($this->sanitizer->sanitize($args->getObject()) as $fieldname => $value)
+    {
+      if($args->hasChangedField($fieldname))
+      {
+        $args->setNewValue($fieldname, $value);
+      }
+    }
   }
 
 }

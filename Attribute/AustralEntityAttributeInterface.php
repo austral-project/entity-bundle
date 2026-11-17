@@ -7,12 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace Austral\EntityBundle\Annotation;
+namespace Austral\EntityBundle\Attribute;
 
 /**
- * @Annotation
+ * @Attribute
  */
-interface AustralEntityAnnotationInterface
+interface AustralEntityAttributeInterface
 {
 
   /**
@@ -20,7 +20,7 @@ interface AustralEntityAnnotationInterface
    *
    * @return $this
    */
-  public function setKeyname(string $keyname): AustralEntityAnnotationInterface;
+  public function setKeyname(string $keyname): AustralEntityAttributeInterface;
 
   /**
    * @return string|null

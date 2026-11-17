@@ -10,14 +10,17 @@
 
 namespace Austral\EntityBundle\Mapping;
 
-use Austral\EntityBundle\Entity\EntityInterface;
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\EntityManager\EntityManager;
 use Austral\EntityBundle\Repository\EntityRepositoryInterface;
 use Austral\ToolsBundle\Services\Debug;
 use Doctrine\ORM\NonUniqueResultException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Austral EntityMapping.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -30,25 +33,30 @@ final Class Mapping
   protected Debug $debug;
 
   /**
-   * @var EntityManager
+   * @var EntityManager<T>
    */
   protected EntityManager $entityManager;
 
   /**
-   * @var array
+   * @var array<string, EntityMapping<T>>
    */
-  protected array $entitiesMapping = array();
+  protected array $entitiesMapping = [];
 
   /**
-   * @var array
+   * @var array<string, class-string>
    */
-  protected array $sluggers = array();
+  protected array $sluggers = [];
 
   /**
-   * Constructor.
+   * Mapping constructor
+   *
+   * @param EntityManager<T> $entityManager
+   * @param Debug $debug
    */
-  public function __construct(EntityManager $entityManager, Debug $debug)
-  {
+  public function __construct(
+    #[Autowire(service: 'austral.entity_manager')] EntityManager $entityManager,
+    #[Autowire(service: 'austral.tools.debug')] Debug $debug,
+  ) {
     $this->entityManager = $entityManager;
     $this->debug = $debug;
   }
@@ -62,7 +70,7 @@ final Class Mapping
   }
 
   /**
-   * @return array
+   * @return array<string, EntityMapping<T>>
    */
   public function getEntitiesMapping(): array
   {
@@ -70,8 +78,8 @@ final Class Mapping
   }
 
   /**
-   * @param string $classname
-   * @param EntityMapping $entityMapping
+   * @param class-string $classname
+   * @param EntityMapping<T> $entityMapping
    *
    * @return $this
    */
@@ -86,7 +94,7 @@ final Class Mapping
   /**
    * @param string $entityClass
    *
-   * @return EntityMapping|null
+   * @return EntityMapping<T>|null
    */
   public function getEntityMapping(string $entityClass): ?EntityMapping
   {
@@ -104,19 +112,19 @@ final Class Mapping
   /**
    * @param string $entityClass
    *
-   * @return array
+   * @return array<string, array<string, FieldMappingInterface<T>>>|array<null>
    */
   public function getFieldsMapping(string $entityClass): array
   {
-    return ($this->getEntityMapping($entityClass)) ? $this->getEntityMapping($entityClass)->getFieldsMapping() : array();
+    return ($this->getEntityMapping($entityClass)) ? $this->getEntityMapping($entityClass)->getFieldsMapping() : [];
   }
 
   /**
    * @param string $entityClass
-   * @param string $fieldMappingClass
+   * @param class-string $fieldMappingClass
    * @param string $fieldname
    *
-   * @return FieldMappingInterface
+   * @return FieldMappingInterface<T>|null
    */
   public function getFieldsMappingByFieldname(string $entityClass, string $fieldMappingClass, string $fieldname): ?FieldMappingInterface
   {
@@ -125,20 +133,20 @@ final Class Mapping
 
   /**
    * @param string $entityClass
-   * @param string $fieldMappingClass
+   * @param class-string $fieldMappingClass
    *
-   * @return array
+   * @return array<string, FieldMappingInterface<T>>|array<null>
    */
   public function getFieldsMappingByClass(string $entityClass, string $fieldMappingClass): array
   {
-    return ($this->getEntityMapping($entityClass)) ? $this->getEntityMapping($entityClass)->getFieldsMappingByClass($fieldMappingClass) : array();
+    return ($this->getEntityMapping($entityClass)) ? $this->getEntityMapping($entityClass)->getFieldsMappingByClass($fieldMappingClass) : [];
   }
 
   /**
    * @param string $entityClass
    * @param string $entityClassMapping
    *
-   * @return EntityClassMappingInterface|null
+   * @return EntityClassMappingInterface<T>|null
    */
   public function getEntityClassMapping(string $entityClass, string $entityClassMapping): ?EntityClassMappingInterface
   {
@@ -149,27 +157,27 @@ final Class Mapping
    * @param string $entityClass
    * @param string $fieldname
    *
-   * @return array
+   * @return array<int, FieldMappingInterface<T>>|array<null>
    */
   public function getAllFieldsMappingClassByFieldname(string $entityClass, string $fieldname): array
   {
-    return ($this->getEntityMapping($entityClass)) ? $this->getEntityMapping($entityClass)->getAllFieldsMappingClassByFieldname($fieldname) : array();
+    return ($this->getEntityMapping($entityClass)) ? $this->getEntityMapping($entityClass)->getAllFieldsMappingClassByFieldname($fieldname) : [];
   }
 
   /**
    * @param string $classOrSlugger
-   * @param $id
+   * @param string $id
    *
-   * @return EntityInterface|null
+   * @return EntityInterface<T>|null
    * @throws NonUniqueResultException
    */
-  public function getObject(string $classOrSlugger, $id): ?EntityInterface
+  public function getObject(string $classOrSlugger, string $id): ?EntityInterface
   {
     if($entitiesFileMapping = $this->getEntityMapping($classOrSlugger))
     {
-      /** @var EntityRepositoryInterface $repository */
+      /** @var EntityRepositoryInterface<T> $repository */
       $repository = $this->entityManager->getDoctrineEntityManager()->getRepository($entitiesFileMapping->entityClass);
-      return $repository->retreiveById($id);
+      return $repository->retrieveById($id);
     }
     return null;
   }
@@ -185,11 +193,11 @@ final Class Mapping
   }
 
   /**
-   * @param $objectOrClass
+   * @param object|class-string $objectOrClass
    *
-   * @return string
+   * @return class-string
    */
-  protected function getClassname($objectOrClass): string
+  protected function getClassname(object|string $objectOrClass): string
   {
     return is_object($objectOrClass) ? get_class($objectOrClass) : $objectOrClass;
   }

@@ -4,90 +4,76 @@ services:
     autoconfigure:  true
     public:         true
 
-  Austral\EntityBundle\:
-    resource: '../../*'
-    exclude:
-      - '../../Annotation'
-      - '../../EntityAnnotation'
-      - '../../Event'
-      - '../../Mapping'
-      - '../../ORM'
-      - '../../Repository'
-      - '../../Entity'
-      - '../../Tests'
-      - '../../AustralEntityBundle.php'
-
-
 ##### Services #####
-
   _instanceof:
     Austral\EntityBundle\Sanitizer\AustralSanitizerInterface:
       tags: [ 'austral_entity.sanitizer_rule' ]
 
-  Austral\EntityBundle\Services\Sanitizer: "@austral.entity.sanitizer"
+  Austral\EntityBundle\Sanitizer\AustralDefaultSanitizer: ~
+  Austral\EntityBundle\Sanitizer\AustralHtmlSanitizer: ~
+
+  Austral\EntityBundle\Services\Sanitizer: ~
   austral.entity.sanitizer:
-    class:        Austral\EntityBundle\Services\Sanitizer
+    alias:        Austral\EntityBundle\Services\Sanitizer
+    public:       true
 
-  Austral\EntityBundle\Services\InitialiseBundleEntities: "@austral.entity.initialise-bundle"
+  Austral\EntityBundle\Services\InitialiseBundleEntities: ~
   austral.entity.initialise-bundle:
-    class:        Austral\EntityBundle\Services\InitialiseBundleEntities
-    arguments:    ["@service_container"]
+    alias:        Austral\EntityBundle\Services\InitialiseBundleEntities
+    public:       true
 
-  Austral\EntityBundle\EntityAnnotation\EntitiesAnnotations:  "@austral.entity.entities-annotations"
-  austral.entity.entities-annotations:
-    class:        Austral\EntityBundle\EntityAnnotation\EntitiesAnnotations
-    arguments:
-      - "@doctrine.orm.entity_manager"
-      - "@annotation_reader"
-      - "@austral.tools.debug"
+  Austral\EntityBundle\EntityAttributes\EntitiesAttributes: ~
+  austral.entity.entities-attributes:
+    alias:        Austral\EntityBundle\EntityAttributes\EntitiesAttributes
+    public:       true
 
-  Austral\EntityBundle\Mapping\Mapping: "@austral.entity.mapping"
+  Austral\EntityBundle\Mapping\Mapping: ~
   austral.entity.mapping:
-    class:        Austral\EntityBundle\Mapping\Mapping
-    arguments:
-      - "@austral.entity_manager"
-      - "@austral.tools.debug"
+    alias:        Austral\EntityBundle\Mapping\Mapping
+    public:       true
 
 ##### Austral Event Subscriber
-  Austral\EntityBundle\EventSubscriber\EntityManagerEventSubscriber:  "@austral.entity.manager.event_subscriber"
+
+  Austral\EntityBundle\EventSubscriber\EntityManagerEventSubscriber:
+    tags:
+      - { name: kernel.event_subscriber }
   austral.entity.manager.event_subscriber:
-    class:        Austral\EntityBundle\EventSubscriber\EntityManagerEventSubscriber
-    tags:
-      - { name: kernel.event_subscriber}
+    alias:        Austral\EntityBundle\EventSubscriber\EntityManagerEventSubscriber
+    public:       true
 
-  Austral\EntityBundle\EventSubscriber\EntityMappingEventSubscriber:  "@austral.entity.mapping.event_subscriber"
+  Austral\EntityBundle\EventSubscriber\EntityMappingEventSubscriber:
+    tags:
+      - { name: kernel.event_subscriber }
   austral.entity.mapping.event_subscriber:
-    class:        Austral\EntityBundle\EventSubscriber\EntityMappingEventSubscriber
-    tags:
-      - { name: kernel.event_subscriber }
+    alias:        Austral\EntityBundle\EventSubscriber\EntityMappingEventSubscriber
+    public:       true
 
-  Austral\EntityBundle\EventSubscriber\QueryBuilderEventSubscriber: "@austral.entity.query_builder.event_subscriber"
-  austral.entity.query_builder.event_subscriber:
-    class:        Austral\EntityBundle\EventSubscriber\QueryBuilderEventSubscriber
+  Austral\EntityBundle\EventSubscriber\QueryBuilderEventSubscriber:
     tags:
       - { name: kernel.event_subscriber }
+  austral.entity.query_builder.event_subscriber:
+    alias:        Austral\EntityBundle\EventSubscriber\QueryBuilderEventSubscriber
+    public:       true
 
 ##### Austral Entity Manager
-  Austral\EntityBundle\EntityManager\EntityManager: "@austral.entity_manager"
+  Austral\EntityBundle\EntityManager\EntityManager: ~
   austral.entity_manager:
-    class:        Austral\EntityBundle\EntityManager\EntityManager
-    arguments:    [ "@doctrine.orm.entity_manager",  "@event_dispatcher" ]
+    alias:        Austral\EntityBundle\EntityManager\EntityManager
+    public:       true
 
 ##### Annotation Listener Kernel
-  Austral\EntityBundle\Listener\EntityMappingListener:  "@austral.entity.mapping.listener"
-  austral.entity.mapping.listener:
-    class:          Austral\EntityBundle\Listener\EntityMappingListener
-    arguments:
-      - "@austral.entity.mapping"
-      - "@austral.entity.entities-annotations"
-      - "@event_dispatcher"
-      - "@austral.tools.debug"
+  Austral\EntityBundle\Listener\EntityMappingListener:
     tags:
       - { name: kernel.event_listener, event: kernel.request, method: initEntityAnnotations, priority: 0 }
+  austral.entity.mapping.listener:
+    alias:        Austral\EntityBundle\Listener\EntityMappingListener
+    public:       true
 
-  Austral\EntityBundle\Listener\DoctrineListener: "@austral.entity.doctrine.listener"
-  austral.entity.doctrine.listener:
-    class: Austral\EntityBundle\Listener\DoctrineListener
-    arguments: [ "@austral.entity.sanitizer" ]
+##### Doctrine Listener (nettoyage #[AustralEntitySanitize])
+  Austral\EntityBundle\Listener\DoctrineListener:
     tags:
-      - { name: doctrine.event_subscriber, connection: default }
+      - { name: doctrine.event_listener, event: prePersist, connection: default }
+      - { name: doctrine.event_listener, event: preUpdate, connection: default }
+  austral.entity.doctrine.listener:
+    alias:        Austral\EntityBundle\Listener\DoctrineListener
+    public:       true

@@ -10,9 +10,7 @@
  
 namespace Austral\EntityBundle\Entity;
 
-use Austral\EntityBundle\Entity\Interfaces\TranslateMasterInterface;
 use Austral\ToolsBundle\AustralTools;
-use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\Mapping as ORM;
 use ReflectionClass;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -20,6 +18,10 @@ use function Symfony\Component\String\u;
 
 /**
  * Austral Abstract Entity.
+ * @template T of object
+ *
+ * @implements EntityInterface<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @abstract
  * @ORM\MappedSuperclass
@@ -44,10 +46,10 @@ abstract class Entity implements EntityInterface
   }
 
   /**
-   * @param array $values
+   * @param array<string, mixed> $values
    * @return $this
    */
-  public function hydrate(array $values = array()): EntityInterface
+  public function hydrate(array $values = []): EntityInterface
   {
     foreach($values as $key => $value)
     {
@@ -60,9 +62,9 @@ abstract class Entity implements EntityInterface
   }
 
   /**
-   * @var string|int
+   * @var string
    */
-  protected $id;
+  protected string $id = "create";
 
   /**
    * @var bool
@@ -90,7 +92,7 @@ abstract class Entity implements EntityInterface
   /**
    * @inheritDoc
    */
-  public function getId()
+  public function getId(): string
   {
     return $this->id;
   }
@@ -98,7 +100,7 @@ abstract class Entity implements EntityInterface
   /**
    * @inheritDoc
    */
-  public function setId(string $id): EntityInterface
+  public function setId(string $id): self
   {
     $this->id = $id;
     return $this;
@@ -115,16 +117,16 @@ abstract class Entity implements EntityInterface
   /**
    * @param bool $isCreate
    *
-   * @return EntityInterface
+   * @return $this
    */
-  public function setIsCreate(bool $isCreate): EntityInterface
+  public function setIsCreate(bool $isCreate): self
   {
     $this->isCreate = $isCreate;
     return $this;
   }
 
   /**
-   * @return string[]
+   * @return array<string, mixed>
    */
   public function arrayObject(): array
   {
@@ -138,7 +140,8 @@ abstract class Entity implements EntityInterface
    */
   public function json(): string
   {
-    return json_encode($this->arrayObject());
+    $json = json_encode($this->arrayObject());
+    return $json ? : "{}";
   }
 
   /**
@@ -176,7 +179,7 @@ abstract class Entity implements EntityInterface
   {
     if(!$this->entityName)
     {
-      $this->entityName = ClassUtils::getRealClass((new ReflectionClass($this))->getName());
+      $this->entityName = (new ReflectionClass($this))->getName();
     }
     return $this->entityName;
   }
@@ -207,11 +210,11 @@ abstract class Entity implements EntityInterface
   }
 
   /**
-   * @param string|null $value
+   * @param string $value
    *
-   * @return string|null
+   * @return string
    */
-  public function keynameGenerator(?string $value): ?string
+  public function keynameGenerator(string $value): string
   {
     return $value ? AustralTools::generatorKey($value) : "";
   }
@@ -230,7 +233,7 @@ abstract class Entity implements EntityInterface
    * @return mixed
    * @throws \Exception
    */
-  public function getValueByFieldname(string $fieldname)
+  public function getValueByFieldname(string $fieldname): mixed
   {
     $propertyAccessor = PropertyAccess::createPropertyAccessor();
     if($propertyAccessor->isReadable($this, $fieldname))
@@ -241,13 +244,9 @@ abstract class Entity implements EntityInterface
   }
 
   /**
-   * @param string $fieldname
-   * @param mixed $value
-   *
-   * @return EntityInterface
-   * @throws \Exception
+   * @inheritDoc
    */
-  public function setValueByFieldname(string $fieldname, $value = null): EntityInterface
+  public function setValueByFieldname(string $fieldname, mixed $value = null): self
   {
     $propertyAccessor = PropertyAccess::createPropertyAccessor();
     if($propertyAccessor->isWritable($this, $fieldname))
@@ -255,14 +254,6 @@ abstract class Entity implements EntityInterface
       $propertyAccessor->setValue($this, $fieldname, $value);
     }
     return $this;
-  }
-
-  /**
-   * @return bool
-   */
-  public function useAustralEntityTranslateBundle(): bool
-  {
-    return $this instanceof TranslateMasterInterface;
   }
 
 }

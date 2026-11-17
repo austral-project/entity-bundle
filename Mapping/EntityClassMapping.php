@@ -11,12 +11,14 @@
 
 namespace Austral\EntityBundle\Mapping;
 
-use Austral\EntityBundle\Entity\EntityInterface;
-use Closure;
-use Exception;
+use Austral\Contracts\Entity\EntityInterface;
 
 /**
  * Austral EntityClassMapping.
+ * @template T of object
+ *
+ * @implements EntityClassMappingInterface<T>
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @abstract
  */
@@ -24,24 +26,22 @@ abstract class EntityClassMapping implements EntityClassMappingInterface
 {
 
   /**
-   * @var Closure|null
+   * @var (\Closure(EntityInterface<T>, string): mixed)|null
    */
-  protected ?Closure $getterObjectValueFonction = null;
+  protected ?\Closure $getterObjectValueFonction = null;
 
   /**
-   * @var Closure|null
+   * @var (\Closure(EntityInterface<T>, string, mixed): mixed)|null
    */
-  protected ?Closure $setterObjectValueFonction = null;
+  protected ?\Closure $setterObjectValueFonction = null;
 
   /**
-   * @var EntityMapping
+   * @var EntityMapping<T>|null
    */
-  protected EntityMapping $entityMapping;
+  protected ?EntityMapping $entityMapping = null;
 
   /**
-   * @param EntityMapping $entityMapping
-   *
-   * @return $this
+   * @inheritDoc
    */
   public function setEntityMapping(EntityMapping $entityMapping): EntityClassMappingInterface
   {
@@ -50,7 +50,7 @@ abstract class EntityClassMapping implements EntityClassMappingInterface
   }
 
   /**
-   * @return string
+   * @inheritDoc
    */
   public function getClassname(): string
   {
@@ -58,37 +58,29 @@ abstract class EntityClassMapping implements EntityClassMappingInterface
   }
 
   /**
-   * @param Closure $getterObjectValueFonction
-   *
-   * @return $this
+   * @inheritDoc
    */
-  public function addGetterObjectValueFonction(Closure $getterObjectValueFonction): EntityClassMappingInterface
+  public function addGetterObjectValueFonction(\Closure $getterObjectValueFonction): self
   {
     $this->getterObjectValueFonction = $getterObjectValueFonction;
     return $this;
   }
 
   /**
-   * @param Closure $setterObjectValueFonction
-   *
-   * @return $this
+   * @inheritDoc
    */
-  public function addSetterObjectValueFonction(Closure $setterObjectValueFonction): EntityClassMappingInterface
+  public function addSetterObjectValueFonction(\Closure $setterObjectValueFonction): self
   {
     $this->setterObjectValueFonction = $setterObjectValueFonction;
     return $this;
   }
 
   /**
-   * @param EntityInterface $object
-   * @param string $fieldname
-   *
-   * @return mixed
-   * @throws Exception
+   * @inheritDoc
    */
-  public function getObjectValue(EntityInterface $object, string $fieldname)
+  public function getObjectValue(EntityInterface $object, string $fieldname): mixed
   {
-    if($this->getterObjectValueFonction instanceof Closure)
+    if($this->getterObjectValueFonction instanceof \Closure)
     {
       return $this->getterObjectValueFonction->call($this, $object, $fieldname);
     }
@@ -96,16 +88,11 @@ abstract class EntityClassMapping implements EntityClassMappingInterface
   }
 
   /**
-   * @param EntityInterface $object
-   * @param string $fieldname
-   * @param null $value
-   *
-   * @return $this
-   * @throws Exception
+   * @inheritDoc
    */
-  public function setObjectValue(EntityInterface $object, string $fieldname, $value = null): EntityClassMappingInterface
+  public function setObjectValue(EntityInterface $object, string $fieldname, mixed $value = null): EntityClassMappingInterface
   {
-    if($this->setterObjectValueFonction instanceof Closure)
+    if($this->setterObjectValueFonction instanceof \Closure)
     {
       $this->setterObjectValueFonction->call($this, $object, $fieldname, $value);
     }

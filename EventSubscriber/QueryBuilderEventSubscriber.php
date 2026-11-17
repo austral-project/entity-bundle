@@ -15,15 +15,17 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Austral EntityRepository Subscriber.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
 class QueryBuilderEventSubscriber implements EventSubscriberInterface
 {
   /**
-   * @return array
+   * @return array<string, string|array{0: string, 1: int}|list<array{0: string, 1?: int}>>
    */
-  public static function getSubscribedEvents()
+  public static function getSubscribedEvents(): array
   {
     return [
       QueryBuilderEvent::EVENT_CONDITION        =>  ["condition", 1024],
@@ -31,7 +33,7 @@ class QueryBuilderEventSubscriber implements EventSubscriberInterface
   }
 
   /**
-   * @param QueryBuilderEvent $queryBuilderEvent
+   * @param QueryBuilderEvent<T> $queryBuilderEvent
    *
    * @return void
    */

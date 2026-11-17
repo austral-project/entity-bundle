@@ -12,27 +12,30 @@ namespace Austral\EntityBundle\Listener;
 
 
 use Austral\EntityBundle\Event\EntityMappingEvent;
-use Austral\EntityBundle\EntityAnnotation\EntitiesAnnotations;
+use Austral\EntityBundle\EntityAttributes\EntitiesAttributes;
 use Austral\EntityBundle\Mapping\Mapping;
 use Austral\ToolsBundle\Services\Debug;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Austral Annotation Listener.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  */
 class EntityMappingListener
 {
 
   /**
-   * @var Mapping
+   * @var Mapping<T>
    */
   protected Mapping $mapping;
 
   /**
-   * @var EntitiesAnnotations
+   * @var EntitiesAttributes<T>
    */
-  protected EntitiesAnnotations $entitiesAnnotations;
+  protected EntitiesAttributes $entitiesAttributes;
 
   /**
    * @var EventDispatcherInterface
@@ -47,25 +50,32 @@ class EntityMappingListener
   /**
    * ControllerListener constructor.
    *
-   * @param Mapping $mapping
-   * @param EntitiesAnnotations $entitiesAnnotations
+   * @param Mapping<T> $mapping
+   * @param EntitiesAttributes<T> $entitiesAttributes
    * @param EventDispatcherInterface $eventDispatcher
    * @param Debug $debug
    */
-  public function __construct(Mapping $mapping, EntitiesAnnotations $entitiesAnnotations, EventDispatcherInterface $eventDispatcher, Debug $debug)
-  {
+  public function __construct(
+    #[Autowire(service: 'austral.entity.mapping')] Mapping $mapping,
+    #[Autowire(service: 'austral.entity.entities-attributes')] EntitiesAttributes $entitiesAttributes,
+    #[Autowire(service: 'event_dispatcher')] EventDispatcherInterface $eventDispatcher,
+    #[Autowire(service: 'austral.tools.debug')] Debug $debug
+  ) {
     $this->mapping = $mapping;
-    $this->entitiesAnnotations = $entitiesAnnotations;
+    $this->entitiesAttributes = $entitiesAttributes;
     $this->debug = $debug;
     $this->eventDispatcher = $eventDispatcher;
   }
 
   /**
+   * initEntityAnnotations
+   *
+   * @return void
    */
-  public function initEntityAnnotations()
+  public function initEntityAnnotations(): void
   {
     $this->debug->stopWatchStart("entity-annotation-init", "austral.entity.annotation.listener");
-    $australEntityAnnotationEvent = new EntityMappingEvent($this->mapping, $this->entitiesAnnotations);
+    $australEntityAnnotationEvent = new EntityMappingEvent($this->mapping, $this->entitiesAttributes);
     $this->eventDispatcher->dispatch($australEntityAnnotationEvent, EntityMappingEvent::EVENT_AUSTRAL_ENTITY_INITIALISE_MAPPING);
     $this->debug->stopWatchStop("entity-annotation-init");
   }

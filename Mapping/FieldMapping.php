@@ -11,12 +11,13 @@
 
 namespace Austral\EntityBundle\Mapping;
 
-use Austral\EntityBundle\Entity\EntityInterface;
-use Closure;
-use Exception;
+use Austral\Contracts\Entity\EntityInterface;
 
 /**
  * Austral FieldMapping.
+ * @template T of object
+ *
+ * @implements FieldMappingInterface<T>
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @abstract
  */
@@ -24,38 +25,36 @@ abstract class FieldMapping implements FieldMappingInterface
 {
 
   /**
-   * @var string
+   * @var string|null
    */
-  protected string $fieldname;
+  protected ?string $fieldname = null;
 
   /**
-   * @var Closure|null
+   * @var (\Closure(EntityInterface<T>, string): mixed)|null
    */
-  protected ?Closure $getterObjectValueFonction = null;
+  protected ?\Closure $getterObjectValueFonction = null;
 
   /**
-   * @var Closure|null
+   * @var (\Closure(EntityInterface<T>, string, mixed): mixed)|null
    */
-  protected ?Closure $setterObjectValueFonction = null;
+  protected ?\Closure $setterObjectValueFonction = null;
 
   /**
-   * @var EntityMapping
+   * @var EntityMapping<T>|null
    */
-  protected EntityMapping $entityMapping;
+  protected ?EntityMapping $entityMapping = null;
 
   /**
-   * @param EntityMapping $entityMapping
-   *
-   * @return $this
+   * @inheritDoc
    */
-  public function setEntityMapping(EntityMapping $entityMapping): FieldMappingInterface
+  public function setEntityMapping(EntityMapping $entityMapping): self
   {
     $this->entityMapping = $entityMapping;
     return $this;
   }
 
   /**
-   * @return string
+   * @inheritDoc
    */
   public function getClassname(): string
   {
@@ -63,7 +62,7 @@ abstract class FieldMapping implements FieldMappingInterface
   }
 
   /**
-   * @return string|null
+   * @inheritDoc
    */
   public function getFieldname(): ?string
   {
@@ -71,69 +70,59 @@ abstract class FieldMapping implements FieldMappingInterface
   }
 
   /**
-   * @param string $fieldname
-   *
-   * @return FieldMappingInterface
+   * @inheritDoc
    */
-  public function setFieldname(string $fieldname): FieldMappingInterface
+  public function setFieldname(string $fieldname): self
   {
     $this->fieldname = $fieldname;
     return $this;
   }
 
   /**
-   * @param Closure $getterObjectValueFonction
-   *
-   * @return $this
+   * @inheritDoc
    */
-  public function addGetterObjectValueFonction(Closure $getterObjectValueFonction): FieldMappingInterface
+  public function addGetterObjectValueFonction(\Closure $getterObjectValueFonction): self
   {
     $this->getterObjectValueFonction = $getterObjectValueFonction;
     return $this;
   }
 
   /**
-   * @param Closure $setterObjectValueFonction
-   *
-   * @return $this
+   * @inheritDoc
    */
-  public function addSetterObjectValueFonction(Closure $setterObjectValueFonction): FieldMappingInterface
+  public function addSetterObjectValueFonction(\Closure $setterObjectValueFonction): self
   {
     $this->setterObjectValueFonction = $setterObjectValueFonction;
     return $this;
   }
 
   /**
-   * @param EntityInterface $object
-   * @param string|null $fieldname
-   *
-   * @return mixed
-   * @throws Exception
+   * @inheritDoc
    */
-  public function getObjectValue(EntityInterface $object, string $fieldname = null)
+  public function getObjectValue(EntityInterface $object, ?string $fieldname = null): mixed
   {
-    if($this->getterObjectValueFonction instanceof Closure)
+    $fieldname = $fieldname ? : $this->getFieldname();
+    if($this->getterObjectValueFonction instanceof \Closure)
     {
-      return $this->getterObjectValueFonction->call($this, $object, $fieldname ? : $this->getFieldname());
+      return $fieldname ? $this->getterObjectValueFonction->call($this, $object, $fieldname) : null;
     }
-    return $object->getValueByFieldname($fieldname ? :$this->getFieldname());
+    return $fieldname ? $object->getValueByFieldname($fieldname) : null;
   }
 
   /**
-   * @param EntityInterface $object
-   * @param string|null $fieldname
-   * @param null $value
-   *
-   * @return $this
-   * @throws Exception
+   * @inheritDoc
    */
-  public function setObjectValue(EntityInterface $object, string $fieldname = null, $value = null): FieldMappingInterface
+  public function setObjectValue(EntityInterface $object, ?string $fieldname = null, mixed $value = null): self
   {
-    if($this->setterObjectValueFonction instanceof Closure)
+    $fieldname = $fieldname ? : $this->getFieldname();
+    if($fieldname)
     {
-      $this->setterObjectValueFonction->call($this, $object, $fieldname ? : $this->getFieldname(), $value);
+      if($this->setterObjectValueFonction instanceof \Closure)
+      {
+        $this->setterObjectValueFonction->call($this, $object, $fieldname, $value);
+      }
+      $object->setValueByFieldname($fieldname, $value);
     }
-    $object->setValueByFieldname($fieldname ? :$this->getFieldname(), $value);
     return $this;
   }
 

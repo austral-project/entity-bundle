@@ -10,12 +10,14 @@
 
 namespace Austral\EntityBundle\Event;
 
-use Austral\EntityBundle\EntityManager\EntityManagerInterface;
+use Austral\EntityBundle\EntityManager\EntityManager;
 
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Austral Event EntityMapping.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -25,16 +27,22 @@ class EntityManagerMappingEvent extends Event
   const EVENT_NAME = "austral.entity_manager.mapping_association";
 
   /**
-   * @var EntityManagerInterface
+   * @var EntityManager<T>
    */
-  private EntityManagerInterface $entityManager;
+  private EntityManager $entityManager;
 
   /**
-   * @var array
+   * @var array<string, mixed>
    */
   private array $fieldsMapping;
 
-  public function __construct(EntityManagerInterface $entityManager, array $fieldsMapping = array())
+  /**
+   * EntityManagerMappingEvent constructor
+   *
+   * @param EntityManager<T> $entityManager
+   * @param array<string, mixed> $fieldsMapping
+   */
+  public function __construct(EntityManager $entityManager, array $fieldsMapping = [])
   {
     $this->entityManager = $entityManager;
     $this->fieldsMapping = $fieldsMapping;
@@ -42,15 +50,15 @@ class EntityManagerMappingEvent extends Event
 
   /**
    * Get entityManager
-   * @return EntityManagerInterface
+   * @return EntityManager<object>
    */
-  public function getEntityManager(): EntityManagerInterface
+  public function getEntityManager(): EntityManager
   {
     return $this->entityManager;
   }
 
   /**
-   * @return array
+   * @return array<string, mixed>
    */
   public function getFieldsMapping(): array
   {
@@ -58,11 +66,11 @@ class EntityManagerMappingEvent extends Event
   }
 
   /**
-   * @param array $fieldsMapping
+   * @param array<string, mixed> $fieldsMapping
    *
    * @return $this
    */
-  public function setFieldsMapping(array $fieldsMapping = array()): EntityManagerMappingEvent
+  public function setFieldsMapping(array $fieldsMapping = []): self
   {
     $this->fieldsMapping = $fieldsMapping;
     return $this;

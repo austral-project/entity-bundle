@@ -12,15 +12,16 @@ namespace Austral\EntityBundle\ORM;
 
 use Austral\EntityBundle\Event\QueryBuilderEvent;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\QueryBuilder as BaseQueryBuilder;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Austral Event EntityRepository.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
-class AustralQueryBuilder extends BaseQueryBuilder
+final class AustralQueryBuilder extends \Doctrine\ORM\QueryBuilder
 {
   /**
    * @var EventDispatcherInterface|null
@@ -46,14 +47,13 @@ class AustralQueryBuilder extends BaseQueryBuilder
     $this->dispatcher = $dispatcher;
   }
 
-
   /**
    * @param QueryConditionInterface $queryCondition
    *
-   * @return AustralQueryBuilder
+   * @return $this
    * @throws \Exception
    */
-  public function queryCondition(QueryConditionInterface $queryCondition): AustralQueryBuilder
+  public function queryCondition(QueryConditionInterface $queryCondition): self
   {
     if($this->dispatcher)
     {
@@ -72,11 +72,11 @@ class AustralQueryBuilder extends BaseQueryBuilder
   }
 
   /**
-   * @param string $entityClassname
+   * @param class-string $entityClassname
    *
-   * @return AustralQueryBuilder
+   * @return $this
    */
-  public function setEntityClassname(string $entityClassname): AustralQueryBuilder
+  public function setEntityClassname(string $entityClassname): self
   {
     $this->entityClassname = $entityClassname;
     return $this;

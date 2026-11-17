@@ -11,27 +11,27 @@
 
 namespace Austral\EntityBundle\Mapping;
 
-use Austral\EntityBundle\Entity\EntityInterface;
-use Closure;
+use Austral\Contracts\Entity\EntityInterface;
 use Exception;
 
 /**
  * Austral FieldMappingInterface.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
- * @implements
  */
 interface FieldMappingInterface
 {
 
   /**
-   * @param EntityMapping $entityMapping
+   * @param EntityMapping<T> $entityMapping
    *
    * @return $this
    */
-  public function setEntityMapping(EntityMapping $entityMapping): FieldMappingInterface;
+  public function setEntityMapping(EntityMapping $entityMapping): self;
 
   /**
-   * @return string
+   * @return class-string
    */
   public function getClassname(): string;
 
@@ -43,42 +43,42 @@ interface FieldMappingInterface
   /**
    * @param string $fieldname
    *
-   * @return FieldMappingInterface
+   * @return $this
    */
-  public function setFieldname(string $fieldname): FieldMappingInterface;
+  public function setFieldname(string $fieldname): self;
 
   /**
-   * @param Closure $getterObjectValueFonction
+   * @param (\Closure(EntityInterface<T>, string): mixed) $getterObjectValueFonction
    *
    * @return $this
    */
-  public function addGetterObjectValueFonction(Closure $getterObjectValueFonction): FieldMappingInterface;
+  public function addGetterObjectValueFonction(\Closure $getterObjectValueFonction): self;
 
   /**
-   * @param Closure $setterObjectValueFonction
+   * @param (\Closure(EntityInterface<T>, string, mixed): mixed) $setterObjectValueFonction
    *
    * @return $this
    */
-  public function addSetterObjectValueFonction(Closure $setterObjectValueFonction): FieldMappingInterface;
+  public function addSetterObjectValueFonction(\Closure $setterObjectValueFonction): self;
 
   /**
-   * @param EntityInterface $object
+   * @param EntityInterface<T> $object
    * @param string|null $fieldname
    *
    * @return mixed
    * @throws Exception
    */
-  public function getObjectValue(EntityInterface $object, string $fieldname = null);
+  public function getObjectValue(EntityInterface $object, ?string $fieldname = null): mixed;
 
   /**
-   * @param EntityInterface $object
+   * @param EntityInterface<T> $object
    * @param string|null $fieldname
-   * @param null $value
+   * @param mixed $value
    *
    * @return $this
    * @throws Exception
    */
-  public function setObjectValue(EntityInterface $object, string $fieldname = null, $value = null): FieldMappingInterface;
+  public function setObjectValue(EntityInterface $object, ?string $fieldname = null, mixed $value = null): self;
 
 
 }

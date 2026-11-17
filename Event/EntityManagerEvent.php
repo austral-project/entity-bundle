@@ -10,13 +10,15 @@
 
 namespace Austral\EntityBundle\Event;
 
-use Austral\EntityBundle\Entity\EntityInterface;
-use Austral\EntityBundle\EntityManager\EntityManagerInterface;
+use Austral\Contracts\Entity\EntityInterface;
+use Austral\EntityBundle\EntityManager\EntityManager;
 
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
- * Austral Event Entity.
+ * Austral Event Entity Manager.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -31,19 +33,19 @@ class EntityManagerEvent extends Event
   const EVENT_PUSH_AFTER = "austral.entity_manager.push.after";
 
   /**
-   * @var EntityInterface
+   * @var EntityInterface<T>
    */
   private EntityInterface $object;
 
   /**
-   * @var EntityInterface|null
+   * @var EntityInterface<T>|null
    */
   private ?EntityInterface $sourceObject = null;
 
   /**
-   * @var EntityManagerInterface
+   * @var EntityManager<T>
    */
-  private EntityManagerInterface $entityManager;
+  private EntityManager $entityManager;
 
   /**
    * @var string
@@ -51,9 +53,9 @@ class EntityManagerEvent extends Event
   private string $name;
 
   /**
-   * @var array
+   * @var array<string, mixed>
    */
-  private array $hydrateValues = array();
+  private array $hydrateValues = [];
 
   /**
    * @var bool
@@ -69,11 +71,11 @@ class EntityManagerEvent extends Event
    * EntityDuplicateEvent constructor.
    *
    * @param string $name
-   * @param EntityManagerInterface $entityManager
-   * @param EntityInterface $object
+   * @param EntityManager<T> $entityManager
+   * @param EntityInterface<T> $object
    * @param \DateTime|null $dateNow
    */
-  public function __construct(string $name, EntityManagerInterface $entityManager, EntityInterface $object, ?\DateTime $dateNow = null)
+  public function __construct(string $name, EntityManager $entityManager, EntityInterface $object, ?\DateTime $dateNow = null)
   {
     $this->name = $name;
     $this->entityManager = $entityManager;
@@ -91,15 +93,15 @@ class EntityManagerEvent extends Event
 
   /**
    * Get entityManager
-   * @return EntityManagerInterface
+   * @return EntityManager<T>
    */
-  public function getEntityManager(): EntityManagerInterface
+  public function getEntityManager(): EntityManager
   {
     return $this->entityManager;
   }
 
   /**
-   * @return EntityInterface
+   * @return EntityInterface<T>
    */
   public function getObject(): EntityInterface
   {
@@ -107,7 +109,7 @@ class EntityManagerEvent extends Event
   }
 
   /**
-   * @return EntityInterface|null
+   * @return EntityInterface<T>|null
    */
   public function getSourceObject(): ?EntityInterface
   {
@@ -115,18 +117,18 @@ class EntityManagerEvent extends Event
   }
 
   /**
-   * @var EntityInterface $sourceObject
+   * @param EntityInterface<T> $sourceObject
    *
    * @return $this
    */
-  public function setSourceObject(EntityInterface $sourceObject): EntityManagerEvent
+  public function setSourceObject(EntityInterface $sourceObject): self
   {
     $this->sourceObject = $sourceObject;
     return $this;
   }
 
   /**
-   * @return array
+   * @return array<string, mixed>
    */
   public function getHydrateValues(): array
   {
@@ -134,11 +136,11 @@ class EntityManagerEvent extends Event
   }
 
   /**
-   * @param array $hydrateValues
+   * @param array<string, mixed> $hydrateValues
    *
-   * @return EntityManagerEvent
+   * @return $this
    */
-  public function setHydrateValues(array $hydrateValues): EntityManagerEvent
+  public function setHydrateValues(array $hydrateValues): self
   {
     $this->hydrateValues = $hydrateValues;
     return $this;
@@ -157,7 +159,7 @@ class EntityManagerEvent extends Event
    *
    * @return $this
    */
-  public function setDateNow(\DateTime $dateNow): EntityManagerEvent
+  public function setDateNow(\DateTime $dateNow): self
   {
     $this->dateNow = $dateNow;
     return $this;
@@ -174,9 +176,9 @@ class EntityManagerEvent extends Event
   /**
    * @param bool $dispatchToFlush
    *
-   * @return EntityManagerEvent
+   * @return $this
    */
-  public function setDispatchToFlush(bool $dispatchToFlush): EntityManagerEvent
+  public function setDispatchToFlush(bool $dispatchToFlush): self
   {
     $this->dispatchToFlush = $dispatchToFlush;
     return $this;

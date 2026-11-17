@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+        colors="true"
+        failOnWarning="true"
+        failOnRisky="true"
+        stopOnFailure="false"
+>
+    <php>
+        <server name="KERNEL_CLASS" value="App\Kernel" force="true" />
+        <server name="LOCALE_DEFAULT" value="en" force="true" />
+    </php>
+    <testsuites>
+        <testsuite name="ToolsBundle">
+            <directory>Test/</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
+</phpunit>

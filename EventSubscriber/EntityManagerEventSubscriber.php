@@ -23,15 +23,17 @@ use function Symfony\Component\String\u;
 
 /**
  * Austral Entity Subscriber.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
 class EntityManagerEventSubscriber implements EventSubscriberInterface
 {
   /**
-   * @return array
+   * @return array<string, string|array{0: string, 1: int}|list<array{0: string, 1?: int}>>
    */
-  public static function getSubscribedEvents()
+  public static function getSubscribedEvents(): array
   {
     return [
       EntityManagerEvent::EVENT_CREATE        =>  ["create", 1024],
@@ -45,9 +47,9 @@ class EntityManagerEventSubscriber implements EventSubscriberInterface
   }
 
   /**
-   * @param EntityManagerEvent $entityEvent
+   * @param EntityManagerEvent<T> $entityEvent
    */
-  public function create(EntityManagerEvent $entityEvent)
+  public function create(EntityManagerEvent $entityEvent): void
   {
     $propertyAccessor = PropertyAccess::createPropertyAccessorBuilder()
       ->enableExceptionOnInvalidIndex()
@@ -63,30 +65,31 @@ class EntityManagerEventSubscriber implements EventSubscriberInterface
         $propertyAccessor->setValue($object, $fieldName, $hydrateValues[$fieldName]);
       }
     }
+
   }
 
   /**
-   * @param EntityManagerEvent $entityEvent
+   * @param EntityManagerEvent<T> $entityEvent
    */
-  public function delete(EntityManagerEvent $entityEvent)
+  public function delete(EntityManagerEvent $entityEvent): void
   {
 
   }
 
   /**
-   * @param EntityManagerEvent $entityEvent
+   * @param EntityManagerEvent<T> $entityEvent
    */
-  public function update(EntityManagerEvent $entityEvent)
+  public function update(EntityManagerEvent $entityEvent): void
   {
 
   }
 
   /**
-   * @param EntityManagerEvent $entityEvent
+   * @param EntityManagerEvent<T> $entityEvent
    *
    * @throws \Exception
    */
-  public function duplicate(EntityManagerEvent $entityEvent)
+  public function duplicate(EntityManagerEvent $entityEvent): void
   {
     foreach($entityEvent->getEntityManager()->getFieldsMapping(get_class($entityEvent->getObject())) as $fieldName => $params)
     {
@@ -126,23 +129,23 @@ class EntityManagerEventSubscriber implements EventSubscriberInterface
   }
 
   /**
-   * @param EntityManagerMappingEvent $mappingAssociationEvent
+   * @param EntityManagerMappingEvent<T> $mappingAssociationEvent
    */
-  public function mapping(EntityManagerMappingEvent $mappingAssociationEvent)
+  public function mapping(EntityManagerMappingEvent $mappingAssociationEvent): void
   {
   }
 
   /**
-   * @param EntityManagerEvent $entityManagerEvent
+   * @param EntityManagerEvent<T> $entityManagerEvent
    */
-  public function pushBefore(EntityManagerEvent $entityManagerEvent)
+  public function pushBefore(EntityManagerEvent $entityManagerEvent): void
   {
   }
 
   /**
-   * @param EntityManagerEvent $entityManagerEvent
+   * @param EntityManagerEvent<T> $entityManagerEvent
    */
-  public function pushAfter(EntityManagerEvent $entityManagerEvent)
+  public function pushAfter(EntityManagerEvent $entityManagerEvent): void
   {
   }
 

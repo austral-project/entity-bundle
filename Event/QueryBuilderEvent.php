@@ -16,6 +16,8 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Austral Event EntityRepository.
+ * @template T of object
+ *
  * @author Matthieu Beurel <matthieu@austral.dev>
  * @final
  */
@@ -25,7 +27,7 @@ class QueryBuilderEvent extends Event
   const EVENT_CONDITION = "austral.event.entity.query_builder.condition";
 
   /**
-   * @var AustralQueryBuilder
+   * @var AustralQueryBuilder<T>
    */
   private AustralQueryBuilder $queryBuilder;
 
@@ -37,7 +39,7 @@ class QueryBuilderEvent extends Event
   /**
    * EntityRepositoryEvent constructor.
    *
-   * @param AustralQueryBuilder $queryBuilder
+   * @param AustralQueryBuilder<T> $queryBuilder
    * @param QueryConditionInterface $queryCondition
    */
   public function __construct(AustralQueryBuilder $queryBuilder, QueryConditionInterface $queryCondition)
@@ -47,7 +49,7 @@ class QueryBuilderEvent extends Event
   }
 
   /**
-   * @return AustralQueryBuilder
+   * @return AustralQueryBuilder<T>
    */
   public function getQueryBuilder(): AustralQueryBuilder
   {
@@ -55,11 +57,11 @@ class QueryBuilderEvent extends Event
   }
 
   /**
-   * @param AustralQueryBuilder $queryBuilder
+   * @param AustralQueryBuilder<T> $queryBuilder
    *
-   * @return QueryBuilderEvent
+   * @return $this
    */
-  public function setQueryBuilder(AustralQueryBuilder $queryBuilder): QueryBuilderEvent
+  public function setQueryBuilder(AustralQueryBuilder $queryBuilder): self
   {
     $this->queryBuilder = $queryBuilder;
     return $this;
@@ -76,9 +78,9 @@ class QueryBuilderEvent extends Event
   /**
    * @param QueryConditionInterface $queryCondition
    *
-   * @return QueryBuilderEvent
+   * @return $this
    */
-  public function setQueryCondition(QueryConditionInterface $queryCondition): QueryBuilderEvent
+  public function setQueryCondition(QueryConditionInterface $queryCondition): self
   {
     $this->queryCondition = $queryCondition;
     return $this;
