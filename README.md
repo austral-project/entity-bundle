@@ -2,9 +2,9 @@
 
 [![Version](https://img.shields.io/packagist/v/austral/entity-bundle?label=version)](https://packagist.org/packages/austral/entity-bundle)
 [![CI](https://github.com/austral-project/entity-bundle/actions/workflows/ci.yml/badge.svg?branch=4.x)](https://github.com/austral-project/entity-bundle/actions/workflows/ci.yml)
-[![PHP](https://img.shields.io/packagist/dependency-v/austral/entity-bundle/php)](https://packagist.org/packages/austral/entity-bundle)
+[![PHP](https://img.shields.io/packagist/dependency-v/austral/entity-bundle/php?version=4.x-dev)](https://packagist.org/packages/austral/entity-bundle)
 [![Symfony](https://img.shields.io/badge/symfony-7.4-black)](https://symfony.com/releases/7.4)
-[![License](https://img.shields.io/packagist/l/austral/entity-bundle)](LICENSE)
+[![License](https://img.shields.io/github/license/austral-project/entity-bundle)](LICENSE)
 
 Tools for Symfony Entity
 
