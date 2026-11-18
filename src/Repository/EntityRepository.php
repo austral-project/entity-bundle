@@ -244,11 +244,14 @@ abstract class EntityRepository extends \Doctrine\ORM\EntityRepository implement
   {
     try
     {
+      /** @var Paginator<T> $paginator */
       $paginator = new Paginator($queryBuilder->getQuery(), true);
+      /** @var PaginatorResult<T> $paginatorResult */
       $paginatorResult = new PaginatorResult($paginator);
     }
     catch (\Exception $e)
     {
+      /** @var PaginatorResult<T> $paginatorResult */
       $paginatorResult = new PaginatorResult(null, $e);
     }
 

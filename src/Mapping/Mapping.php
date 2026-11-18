@@ -182,10 +182,11 @@ final class Mapping
   {
     if ($entitiesFileMapping = $this->getEntityMapping($classOrSlugger))
     {
-      /** @var EntityRepositoryInterface<T> $repository */
       $repository = $this->entityManager->getDoctrineEntityManager()->getRepository($entitiesFileMapping->entityClass);
-
-      return $repository->retrieveById($id);
+      if ($repository instanceof EntityRepositoryInterface)
+      {
+        return $repository->retrieveById($id);
+      }
     }
 
     return null;
@@ -199,15 +200,5 @@ final class Mapping
   public function getSlugger(string $entityClass): ?string
   {
     return $this->getEntityMapping($entityClass) ? $this->getEntityMapping($entityClass)->slugger : null;
-  }
-
-  /**
-   * @param object|class-string $objectOrClass
-   *
-   * @return class-string
-   */
-  private function getClassname(object|string $objectOrClass): string
-  {
-    return is_object($objectOrClass) ? get_class($objectOrClass) : $objectOrClass;
   }
 }

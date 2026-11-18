@@ -163,7 +163,7 @@ class EntitiesAttributes
   }
 
   /**
-   * @param \ReflectionClass<object> $reflection
+   * @param \ReflectionClass<covariant object> $reflection
    * @param EntityAttributes<T>      $entityAttribute
    * @param bool                     $override
    *

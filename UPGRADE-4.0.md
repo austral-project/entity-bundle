@@ -17,6 +17,10 @@ All `austral/*` packages must be upgraded to `^4.0` at the same time.
 
 ## Breaking changes
 
+### `EntityManager::$user` removed
+
+This protected property was never read nor written by Austral. If your own entity manager extends `Austral\EntityBundle\EntityManager\EntityManager` and uses `$this->user`, declare the property in your class.
+
 <!--
 For each break: what changes, why, and a before / after example.
 

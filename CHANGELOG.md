@@ -10,9 +10,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Sources moved to `src/`, tests to `tests/` (PSR-4 `Austral\EntityBundle\` → `src/`).
+- Dependencies used by the bundle are now declared in `composer.json` (tools-bundle, Doctrine collections / DBAL, Symfony components).
+
 ### Fixed
 
 ### Removed
+
+- `EntityManager::$user`: unused property, removed (entity-bundle no longer depends on symfony/security-core).
 
 ## [3.1.0] - 2022-09-17
 

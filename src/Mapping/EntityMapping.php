@@ -87,6 +87,14 @@ final class EntityMapping
   }
 
   /**
+   * @return Mapping<T>|null
+   */
+  public function getMapping(): ?Mapping
+  {
+    return $this->mapping;
+  }
+
+  /**
    * @param EntityClassMappingInterface<T> $entityClassMapping
    *
    * @return $this
