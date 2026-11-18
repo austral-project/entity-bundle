@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit
-        colors="true"
-        failOnWarning="true"
-        failOnRisky="true"
-        stopOnFailure="false"
->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         cacheDirectory=".phpunit.cache"
+         colors="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true">
     <php>
-        <server name="KERNEL_CLASS" value="App\Kernel" force="true" />
-        <server name="LOCALE_DEFAULT" value="en" force="true" />
+        <ini name="error_reporting" value="-1"/>
+        <server name="APP_ENV" value="test" force="true"/>
     </php>
+
     <testsuites>
-        <testsuite name="ToolsBundle">
-            <directory>Test/</directory>
+        <testsuite name="default">
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
+
     <source>
         <include>
             <directory>src</directory>
