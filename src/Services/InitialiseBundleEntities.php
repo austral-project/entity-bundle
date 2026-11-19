@@ -38,8 +38,7 @@ class InitialiseBundleEntities
    * InitialiseBundleEntities constructor.
    */
   public function __construct(
-    #[Autowire(service: 'service_container')]
-    ContainerInterface $container
+    #[Autowire(service: 'service_container')] ContainerInterface $container
   ) {
     $this->container = $container;
     $this->filesystem = new Filesystem();

@@ -30,16 +30,6 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 final class Mapping
 {
   /**
-   * @var Debug
-   */
-  private Debug $debug;
-
-  /**
-   * @var EntityManager<T>
-   */
-  private EntityManager $entityManager;
-
-  /**
    * @var array<string, EntityMapping<T>>
    */
   private array $entitiesMapping = [];
@@ -56,13 +46,9 @@ final class Mapping
    * @param Debug            $debug
    */
   public function __construct(
-    #[Autowire(service: 'austral.entity_manager')]
-    EntityManager $entityManager,
-    #[Autowire(service: 'austral.tools.debug')]
-    Debug $debug,
+    #[Autowire(service: 'austral.entity_manager')] private EntityManager $entityManager,
+    #[Autowire(service: 'austral.tools.debug')] private Debug $debug,
   ) {
-    $this->entityManager = $entityManager;
-    $this->debug = $debug;
   }
 
   /**
@@ -174,7 +160,7 @@ final class Mapping
    * @param string $classOrSlugger
    * @param string $id
    *
-   * @return EntityInterface<T>|null
+   * @return EntityInterface<object>|null any entity class known by the mapping, not only T
    *
    * @throws NonUniqueResultException
    */

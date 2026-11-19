@@ -51,10 +51,8 @@ class EntitiesAttributes
    * @throws \ReflectionException
    */
   public function __construct(
-    #[Autowire(service: 'austral.entity_manager')]
-    EntityManager $entityManager,
-    #[Autowire(service: 'austral.tools.debug')]
-    Debug $debug,
+    #[Autowire(service: 'austral.entity_manager')] EntityManager $entityManager,
+    #[Autowire(service: 'austral.tools.debug')] Debug $debug,
   ) {
     $this->entityManager = $entityManager;
     $this->debug = $debug;
@@ -164,8 +162,8 @@ class EntitiesAttributes
 
   /**
    * @param \ReflectionClass<covariant object> $reflection
-   * @param EntityAttributes<T>      $entityAttribute
-   * @param bool                     $override
+   * @param EntityAttributes<T>                $entityAttribute
+   * @param bool                               $override
    *
    * @return void
    */

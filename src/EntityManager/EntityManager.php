@@ -14,8 +14,8 @@ namespace Austral\EntityBundle\EntityManager;
 use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\Event\EntityManagerEvent;
 use Austral\EntityBundle\Event\EntityManagerMappingEvent;
-use Austral\EntityBundle\Model\PaginatorResult;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
+use Austral\EntityBundle\Paginator\PaginatorResult;
 use Austral\EntityBundle\Repository\EntityRepositoryInterface;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Driver\PDO\MySQL\Driver;
@@ -80,10 +80,8 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    * @param class-string<T>|null           $class
    */
   public function __construct(
-    #[Autowire(service: 'doctrine.orm.entity_manager')]
-    DoctrineEntityManagerInterface $em,
-    #[Autowire(service: 'event_dispatcher')]
-    EventDispatcherInterface $dispatcher,
+    #[Autowire(service: 'doctrine.orm.entity_manager')] DoctrineEntityManagerInterface $em,
+    #[Autowire(service: 'event_dispatcher')] EventDispatcherInterface $dispatcher,
     ?string $class = null
   ) {
     $this->em = $em;
@@ -537,7 +535,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
     if (!$paginator = $this->repository?->paginatorByQueryBuilder($queryBuilder))
     {
       /** @var PaginatorResult<T> $paginator */
-      $paginator = new PaginatorResult(null, new \Exception('Repository is not defined !'));
+      $paginator = new PaginatorResult([], 0, new \Exception('Repository is not defined !'));
     }
 
     return $paginator;
@@ -551,7 +549,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
     if (!$paginator = $this->repository?->paginatorByClosure($closure, $alias))
     {
       /** @var PaginatorResult<T> $paginator */
-      $paginator = new PaginatorResult(null, new \Exception('Repository is not defined !'));
+      $paginator = new PaginatorResult([], 0, new \Exception('Repository is not defined !'));
     }
 
     return $paginator;

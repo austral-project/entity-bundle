@@ -12,13 +12,14 @@
 namespace Austral\EntityBundle\Repository;
 
 use Austral\Contracts\Entity\EntityInterface;
-use Austral\EntityBundle\Model\PaginatorResult;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
+use Austral\EntityBundle\Paginator\PaginatorResult;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\ORM\Tools\Pagination\Paginator;
+use Doctrine\ORM\Tools\Pagination\OffsetPaginator;
+use Doctrine\ORM\Tools\Pagination\Window;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -244,15 +245,28 @@ abstract class EntityRepository extends \Doctrine\ORM\EntityRepository implement
   {
     try
     {
-      /** @var Paginator<T> $paginator */
-      $paginator = new Paginator($queryBuilder->getQuery(), true);
-      /** @var PaginatorResult<T> $paginatorResult */
-      $paginatorResult = new PaginatorResult($paginator);
+      $query = $queryBuilder->getQuery();
+
+      /** @var OffsetPaginator<T> $paginator */
+      $paginator = new OffsetPaginator(fetchJoinCollection: true);
+      $maxResults = $query->getMaxResults();
+
+      if (null === $maxResults || $maxResults < 1)
+      {
+        /** @var array<string|int, T> $objects */
+        $objects = $query->getResult();
+        $paginatorResult = new PaginatorResult($objects, $paginator->getTotalCount($query));
+      }
+      else
+      {
+        $page = $paginator->paginate($query, new Window(max(0, $query->getFirstResult()), $maxResults));
+        $paginatorResult = new PaginatorResult($page->getItems(), $page->getTotalCount());
+      }
     }
     catch (\Exception $e)
     {
       /** @var PaginatorResult<T> $paginatorResult */
-      $paginatorResult = new PaginatorResult(null, $e);
+      $paginatorResult = new PaginatorResult([], 0, $e);
     }
 
     return $paginatorResult;

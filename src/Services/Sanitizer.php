@@ -39,8 +39,7 @@ class Sanitizer
    * @param iterable<AustralSanitizerInterface> $sanitizers
    */
   public function __construct(
-    #[AutowireIterator('austral_entity.sanitizer_rule')]
-    iterable $sanitizers = []
+    #[AutowireIterator('austral_entity.sanitizer_rule')] iterable $sanitizers = []
   ) {
     foreach ($sanitizers as $sanitizer)
     {

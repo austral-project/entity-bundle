@@ -12,8 +12,8 @@
 namespace Austral\EntityBundle\EntityManager;
 
 use Austral\Contracts\Entity\EntityInterface;
-use Austral\EntityBundle\Model\PaginatorResult;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
+use Austral\EntityBundle\Paginator\PaginatorResult;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface as DoctrineEntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;

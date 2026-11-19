@@ -56,14 +56,10 @@ class EntityMappingListener
    * @param Debug                    $debug
    */
   public function __construct(
-    #[Autowire(service: 'austral.entity.mapping')]
-    Mapping $mapping,
-    #[Autowire(service: 'austral.entity.entities-attributes')]
-    EntitiesAttributes $entitiesAttributes,
-    #[Autowire(service: 'event_dispatcher')]
-    EventDispatcherInterface $eventDispatcher,
-    #[Autowire(service: 'austral.tools.debug')]
-    Debug $debug
+    #[Autowire(service: 'austral.entity.mapping')] Mapping $mapping,
+    #[Autowire(service: 'austral.entity.entities-attributes')] EntitiesAttributes $entitiesAttributes,
+    #[Autowire(service: 'event_dispatcher')] EventDispatcherInterface $eventDispatcher,
+    #[Autowire(service: 'austral.tools.debug')] Debug $debug
   ) {
     $this->mapping = $mapping;
     $this->entitiesAttributes = $entitiesAttributes;
