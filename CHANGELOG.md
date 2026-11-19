@@ -12,16 +12,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Sources moved to `src/`, tests to `tests/` (PSR-4 `Austral\EntityBundle\` → `src/`).
 - Dependencies used by the bundle are now declared in `composer.json` (tools-bundle, Doctrine collections / DBAL, Symfony components).
+- **BREAKING** `retreiveById()`, `retreiveByKey()` and `retreiveByClosure()` are renamed `retrieveById()`, `retrieveByKey()` and `retrieveByClosure()`, on the repository and on the entity manager. Their `$closure` argument is typed `?callable`.
 - **BREAKING** `paginatorByQueryBuilder()` / `paginatorByClosure()` return a `Austral\EntityBundle\Paginator\PaginatorResult` instead of an `array{count, objects}`; pagination uses Doctrine ORM's `OffsetPaginator` (the ORM `Paginator` is deprecated since ORM 3.7).
-- **BREAKING** `Entity::serialize()` returns the JSON representation (same as `json()`) instead of a PHP `serialize()` string.
 - `countByQueryBuilder()` counts distinct root entities (`COUNT(DISTINCT <root alias>)`), ignoring the `ORDER BY` and the pagination of the given QueryBuilder.
 - `InitialiseBundleEntities` and `InitialiseBundleEntitiesCommand` receive their dependencies through the constructor instead of the service container.
 - `EntityManagerEventSubscriber` uses the PropertyAccess component to read and write entity fields; a `PropertyAccessorInterface` can be injected.
 
 ### Deprecated
-
-- `Entity::serialize()` has been removed from `Austral\EntityBundle\Entity\Entity` and from `Austral\Contracts\Entity\EntityInterface`.
-- `Austral\EntityBundle\Entity\EntityInterface`, use `Austral\Contracts\Entity\EntityInterface` (austral/contracts).
 
 ### Fixed
 
@@ -36,6 +33,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Removed
 
+- **BREAKING** `Austral\EntityBundle\Entity\EntityInterface`: use `Austral\Contracts\Entity\EntityInterface` (austral/contracts).
+- **BREAKING** `Entity::serialize()`, removed from `Austral\EntityBundle\Entity\Entity` and from `Austral\Contracts\Entity\EntityInterface`: use `json()`.
 - `EntityManager::$user`: unused property, removed (entity-bundle no longer depends on symfony/security-core).
 
 ## [3.1.0] - 2022-09-17

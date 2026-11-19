@@ -43,9 +43,56 @@ $objects = $result->getObjects();
 
 When the query fails, `getCount()` returns `0`, `getObjects()` returns `[]` and `getException()` returns the exception that was raised.
 
-### `Entity::serialize()` returns JSON
+### `EntityInterface` moved to austral/contracts
 
-`Entity::serialize()` returned `serialize($this->arrayObject())`. It now returns the same JSON string as `Entity::json()` and is deprecated. If you need the PHP serialized form, call `serialize($entity->arrayObject())` in your code.
+`Austral\EntityBundle\Entity\EntityInterface` is removed. Use `Austral\Contracts\Entity\EntityInterface`, provided by `austral/contracts` (installed with entity-bundle).
+
+```diff
+- use Austral\EntityBundle\Entity\EntityInterface;
++ use Austral\Contracts\Entity\EntityInterface;
+```
+
+To update a project:
+
+```bash
+grep -rl 'Austral\\EntityBundle\\Entity\\EntityInterface' src/ | xargs sed -i 's/Austral\\EntityBundle\\Entity\\EntityInterface/Austral\\Contracts\\Entity\\EntityInterface/g'
+```
+
+### `retreive*()` methods renamed `retrieve*()`
+
+The misspelled methods of the repository and of the entity manager are renamed, without alias:
+
+| 3.1 | 4.0 |
+|-----|-----|
+| `retreiveById()` | `retrieveById()` |
+| `retreiveByKey()` | `retrieveByKey()` |
+| `retreiveByClosure()` | `retrieveByClosure()` |
+
+The `$closure` argument is now typed `?callable` (it was `\Closure`).
+
+To update a project:
+
+```bash
+grep -rl 'retreiveBy' src/ templates/ | xargs sed -i 's/retreiveBy/retrieveBy/g'
+```
+
+> **Warning:** if one of your repositories or entity managers **overrides** a `retreive*()` method, your override is no longer called after the upgrade, and no error is raised. Rename it to `retrieve*()`.
+
+### `Entity::serialize()` removed
+
+`Entity::serialize()` returned `serialize($this->arrayObject())`. It is removed from `Austral\EntityBundle\Entity\Entity` and from `Austral\Contracts\Entity\EntityInterface`.
+
+Before:
+
+```php
+$value = $entity->serialize();
+```
+
+After:
+
+```php
+$value = $entity->json();                       // JSON representation
+```
 
 <!--
 For each break: what changes, why, and a before / after example.
