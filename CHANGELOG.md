@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Deprecated
 
-- `Entity::serialize()`, use `json()` instead.
+- `Entity::serialize()` has been removed from `Austral\EntityBundle\Entity\Entity` and from `Austral\Contracts\Entity\EntityInterface`.
 - `Austral\EntityBundle\Entity\EntityInterface`, use `Austral\Contracts\Entity\EntityInterface` (austral/contracts).
 
 ### Fixed

@@ -154,16 +154,6 @@ abstract class Entity implements EntityInterface
 
   /**
    * {@inheritDoc}
-   *
-   * @deprecated since 4.0, use json() instead
-   */
-  public function serialize(): string
-  {
-    return $this->json();
-  }
-
-  /**
-   * {@inheritDoc}
    */
   public function getClassname(): string
   {
