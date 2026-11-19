@@ -15,6 +15,7 @@ use Austral\EntityBundle\Services\InitialiseBundleEntities;
 use Austral\ToolsBundle\Command\Base\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Austral Initialise Bundle Entities Command.
@@ -49,19 +50,22 @@ class InitialiseBundleEntitiesCommand extends Command
     ;
   }
 
+  public function __construct(
+    #[Autowire(service: 'austral.entity.initialise-bundle')] private InitialiseBundleEntities $initialiseBundleService,
+    ?string $name = null,
+    ?callable $code = null
+  ) {
+    parent::__construct($name, $code);
+  }
+
   /**
    * @param InputInterface  $input
    * @param OutputInterface $output
    *
-   * @throws \Doctrine\ORM\NonUniqueResultException|\ReflectionException
+   * @throws \ReflectionException
    */
   protected function executeCommand(InputInterface $input, OutputInterface $output): void
   {
-    $initialiseBundleService = $this->container?->get('austral.entity.initialise-bundle');
-    if (!$initialiseBundleService instanceof InitialiseBundleEntities)
-    {
-      throw new \LogicException(sprintf("Service 'austral.entity.initialise-bundle' must implement %s", InitialiseBundleEntities::class));
-    }
-    $initialiseBundleService->init();
+    $this->initialiseBundleService->init();
   }
 }

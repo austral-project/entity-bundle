@@ -14,7 +14,6 @@ namespace Austral\EntityBundle\Repository;
 use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\EntityBundle\Paginator\PaginatorResult;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\QueryException;
@@ -85,26 +84,26 @@ interface EntityRepositoryInterface
    * @param 'ASC'|'DESC'                        $orderByType
    * @param (callable(QueryBuilder): void)|null $closure
    *
-   * @return Collection<int, EntityInterface<T>>|null
+   * @return array<array-key, EntityInterface<T>>
    *
    * @throws QueryException
    */
-  public function selectAll(string $orderByAttribute = 'id', string $orderByType = 'ASC', ?callable $closure = null): ?Collection;
+  public function selectAll(string $orderByAttribute = 'id', string $orderByType = 'ASC', ?callable $closure = null): array;
 
   /**
    * @param QueryBuilder $queryBuilder
    *
-   * @return Collection<int, EntityInterface<T>>|null
+   * @return array<array-key, EntityInterface<T>>
    */
-  public function selectByQueryBuilder(QueryBuilder $queryBuilder): ?Collection;
+  public function selectByQueryBuilder(QueryBuilder $queryBuilder): array;
 
   /**
    * @param (callable(QueryBuilder): void)|null $closure
    * @param non-empty-string                    $alias
    *
-   * @return Collection<int, EntityInterface<T>>|null
+   * @return array<array-key, EntityInterface<T>>
    */
-  public function selectByClosure(?callable $closure, string $alias = 'root'): ?Collection;
+  public function selectByClosure(?callable $closure, string $alias = 'root'): array;
 
   /**
    * @param EntityInterface<T>                  $object

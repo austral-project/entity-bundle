@@ -12,7 +12,6 @@
 namespace Austral\EntityBundle\Services;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -25,22 +24,20 @@ use Symfony\Component\Filesystem\Filesystem;
 class InitialiseBundleEntities
 {
   /**
-   * @var ContainerInterface
-   */
-  protected ContainerInterface $container;
-
-  /**
    * @var Filesystem
    */
   protected Filesystem $filesystem;
 
   /**
-   * InitialiseBundleEntities constructor.
+   * InitialiseBundleEntities constructor
+   *
+   * @param string                      $rootPathEntities
+   * @param array<string, class-string> $bundles
    */
   public function __construct(
-    #[Autowire(service: 'service_container')] ContainerInterface $container
+    #[Autowire(param: 'austral.entity.initialise-bundle.path')] private readonly string $rootPathEntities,
+    #[Autowire(param: 'kernel.bundles')] private readonly array $bundles = []
   ) {
-    $this->container = $container;
     $this->filesystem = new Filesystem();
   }
 
@@ -51,15 +48,8 @@ class InitialiseBundleEntities
    */
   public function init(): InitialiseBundleEntities
   {
-    $bundles = $this->container->getParameter('kernel.bundles');
-    if (!is_array($bundles))
-    {
-      $bundles = [];
-    }
-    $rootPathEntities = $this->container->getParameter('austral.entity.initialise-bundle.path');
-    $rootPathEntities = is_string($rootPathEntities) ? $rootPathEntities : '';
     $skeletonDirs = [];
-    foreach ($bundles as $bundleName => $bundle)
+    foreach ($this->bundles as $bundleName => $bundle)
     {
       if (preg_match('/Austral(.*Bundle)/iuU', $bundleName, $matches))
       {
@@ -75,13 +65,13 @@ class InitialiseBundleEntities
 
     if (count($skeletonDirs))
     {
-      if (!file_exists($rootPathEntities))
+      if (!file_exists($this->rootPathEntities))
       {
-        $this->filesystem->mkdir($rootPathEntities);
+        $this->filesystem->mkdir($this->rootPathEntities);
       }
       foreach ($skeletonDirs as $bundleName => $skeletonDir)
       {
-        $entitiesPath = "{$rootPathEntities}/{$bundleName}";
+        $entitiesPath = "{$this->rootPathEntities}/{$bundleName}";
         if (!file_exists($entitiesPath))
         {
           $this->filesystem->mkdir($entitiesPath);

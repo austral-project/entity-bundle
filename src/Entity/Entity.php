@@ -11,6 +11,7 @@
 
 namespace Austral\EntityBundle\Entity;
 
+use Austral\Contracts\Entity\EntityInterface;
 use Austral\ToolsBundle\AustralTools;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -153,10 +154,12 @@ abstract class Entity implements EntityInterface
 
   /**
    * {@inheritDoc}
+   *
+   * @deprecated since 4.0, use json() instead
    */
   public function serialize(): string
   {
-    return serialize($this->arrayObject());
+    return $this->json();
   }
 
   /**

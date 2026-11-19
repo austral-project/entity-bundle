@@ -14,8 +14,6 @@ namespace Austral\EntityBundle\Repository;
 use Austral\Contracts\Entity\EntityInterface;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\EntityBundle\Paginator\PaginatorResult;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\OffsetPaginator;
@@ -95,6 +93,11 @@ abstract class EntityRepository extends \Doctrine\ORM\EntityRepository implement
    */
   public function retrieveByKey(string $key, string $value, ?callable $closure = null): ?EntityInterface
   {
+    if (!$this->getClassMetadata()->hasField($key))
+    {
+      throw new \InvalidArgumentException("Field {$key} does not exist in entity {$this->getClassMetadata()->getName()}");
+    }
+
     $queryBuilder = $this->createQueryBuilder('root')
       ->where("root.{$key} = :{$key}")
       ->setParameter("{$key}", $value);
@@ -145,7 +148,7 @@ abstract class EntityRepository extends \Doctrine\ORM\EntityRepository implement
   /**
    * {@inheritDoc}
    */
-  public function selectAll(string $orderByAttribute = 'id', string $orderByType = 'ASC', ?callable $closure = null): ?Collection
+  public function selectAll(string $orderByAttribute = 'id', string $orderByType = 'ASC', ?callable $closure = null): array
   {
     $queryBuilder = $this->createQueryBuilder('root');
     if (!str_contains($orderByAttribute, '.'))
@@ -159,32 +162,17 @@ abstract class EntityRepository extends \Doctrine\ORM\EntityRepository implement
     {
       $closure->call($this, $queryBuilder);
     }
-    $query = $queryBuilder->getQuery();
-    try
-    {
-      $objects = $query->execute();
-    }
-    catch (NoResultException $e)
-    {
-      $objects = [];
-    }
 
-    return $objects;
+    return $this->selectByQueryBuilder($queryBuilder);
   }
 
   /**
    * {@inheritDoc}
    */
-  public function selectByQueryBuilder(QueryBuilder $queryBuilder): ?Collection
+  public function selectByQueryBuilder(QueryBuilder $queryBuilder): array
   {
-    try
-    {
-      $objects = $queryBuilder->getQuery()->execute();
-    }
-    catch (NoResultException $e)
-    {
-      $objects = new ArrayCollection();
-    }
+    /** @var array<array-key, EntityInterface<T>> $objects */
+    $objects = $queryBuilder->getQuery()->getResult();
 
     return $objects;
   }
@@ -192,7 +180,7 @@ abstract class EntityRepository extends \Doctrine\ORM\EntityRepository implement
   /**
    * {@inheritDoc}
    */
-  public function selectByClosure(?callable $closure, string $alias = 'root'): ?Collection
+  public function selectByClosure(?callable $closure, string $alias = 'root'): array
   {
     $queryBuilder = $this->createQueryBuilder($alias);
     $queryBuilder = $this->queryBuilderExtends('select-by-closure', $queryBuilder);
@@ -299,7 +287,7 @@ abstract class EntityRepository extends \Doctrine\ORM\EntityRepository implement
     }
     $count = $queryBuilder->getQuery()->getSingleScalarResult();
 
-    return is_integer($count) ? $count : 0;
+    return is_numeric($count) ? (int) $count : 0;
   }
 
   /**
@@ -307,9 +295,16 @@ abstract class EntityRepository extends \Doctrine\ORM\EntityRepository implement
    */
   public function countByQueryBuilder(QueryBuilder $queryBuilder): int
   {
-    $count = $queryBuilder->select('COUNT(root)')->getQuery()->getSingleScalarResult();
+    $countQueryBuilder = clone $queryBuilder;
+    $rootAlias = $countQueryBuilder->getRootAliases()[0] ?? 'root';
+    $count = $countQueryBuilder->select("COUNT(DISTINCT {$rootAlias})")
+      ->resetDQLPart('orderBy')
+      ->setFirstResult(0)
+      ->setMaxResults(null)
+      ->getQuery()
+      ->getSingleScalarResult();
 
-    return is_integer($count) ? $count : 0;
+    return is_numeric($count) ? (int) $count : 0;
   }
 
   /**

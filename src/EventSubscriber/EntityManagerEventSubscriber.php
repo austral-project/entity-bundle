@@ -14,11 +14,12 @@ namespace Austral\EntityBundle\EventSubscriber;
 use Austral\EntityBundle\Event\EntityManagerEvent;
 use Austral\EntityBundle\Event\EntityManagerMappingEvent;
 use Austral\ToolsBundle\AustralTools;
+use Doctrine\ORM\Mapping\FieldMapping;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
-
-use function Symfony\Component\String\u;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
  * Austral Entity Subscriber.
@@ -31,6 +32,21 @@ use function Symfony\Component\String\u;
  */
 class EntityManagerEventSubscriber implements EventSubscriberInterface
 {
+  /**
+   * @var PropertyAccessorInterface|PropertyAccessor
+   */
+  protected PropertyAccessorInterface $propertyAccessor;
+
+  /**
+   * EntityManagerEventSubscriber constructor
+   *
+   * @param PropertyAccessorInterface|null $propertyAccessor
+   */
+  public function __construct(?PropertyAccessorInterface $propertyAccessor = null)
+  {
+    $this->propertyAccessor = $propertyAccessor ?? PropertyAccess::createPropertyAccessor();
+  }
+
   /**
    * @return array<string, string|array{0: string, 1: int}|list<array{0: string, 1?: int}>>
    */
@@ -52,10 +68,6 @@ class EntityManagerEventSubscriber implements EventSubscriberInterface
    */
   public function create(EntityManagerEvent $entityEvent): void
   {
-    $propertyAccessor = PropertyAccess::createPropertyAccessorBuilder()
-      ->enableExceptionOnInvalidIndex()
-      ->getPropertyAccessor();
-
     $object = $entityEvent->getObject();
     $object->setIsCreate(true);
     $hydrateValues = $entityEvent->getHydrateValues();
@@ -63,7 +75,7 @@ class EntityManagerEventSubscriber implements EventSubscriberInterface
     {
       if (array_key_exists($fieldName, $hydrateValues))
       {
-        $propertyAccessor->setValue($object, $fieldName, $hydrateValues[$fieldName]);
+        $this->propertyAccessor->setValue($object, $fieldName, $hydrateValues[$fieldName]);
       }
     }
   }
@@ -89,39 +101,25 @@ class EntityManagerEventSubscriber implements EventSubscriberInterface
    */
   public function duplicate(EntityManagerEvent $entityEvent): void
   {
-    foreach ($entityEvent->getEntityManager()->getFieldsMapping(get_class($entityEvent->getObject())) as $fieldName => $params)
+    $object = $entityEvent->getObject();
+    foreach ($entityEvent->getEntityManager()->getFieldsMapping(get_class($object)) as $fieldName => $fieldMapping)
     {
-      $setterFunction = u(u($fieldName)->camel()->title())->ensureStart('set')->__toString();
-      $getterFunction = u(u($fieldName)->camel()->title())->ensureStart('get')->__toString();
-
-      $valueHasChange = false;
-      $newValue = null;
-      if (array_key_exists('id', $params))
+      if (!$fieldMapping instanceof FieldMapping || !in_array($fieldMapping->type, ['string', 'text'], true))
       {
-        if ('string' == $params['type'] || 'text' == $params['type'])
-        {
-          $valueHasChange = true;
-          $newValue = Uuid::uuid4()->__toString();
-        }
-        else
-        {
-          $valueHasChange = true;
-        }
+        continue;
       }
-      elseif (true === $params['unique'])
+      if (!$this->propertyAccessor->isWritable($object, $fieldName))
       {
-        if ('string' == $params['type'] || 'text' == $params['type'])
-        {
-          $valueHasChange = true;
-          $newValue = "{$entityEvent->getObject()->$getterFunction()} - ".AustralTools::random(8);
-        }
+        continue;
       }
-      if ($valueHasChange)
+      if (true === $fieldMapping->id)
       {
-        if (method_exists($entityEvent->getObject(), $setterFunction))
-        {
-          $entityEvent->getObject()->$setterFunction($newValue);
-        }
+        $this->propertyAccessor->setValue($object, $fieldName, Uuid::uuid4()->toString());
+      }
+      elseif (true === $fieldMapping->unique && $this->propertyAccessor->isReadable($object, $fieldName))
+      {
+        $value = $this->propertyAccessor->getValue($object, $fieldName);
+        $this->propertyAccessor->setValue($object, $fieldName, "{$value} - ".AustralTools::random(8));
       }
     }
   }

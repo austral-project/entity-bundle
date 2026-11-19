@@ -17,15 +17,11 @@ use Austral\EntityBundle\Event\EntityManagerMappingEvent;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\EntityBundle\Paginator\PaginatorResult;
 use Austral\EntityBundle\Repository\EntityRepositoryInterface;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Driver\PDO\MySQL\Driver;
-use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\ORM\EntityManagerInterface as DoctrineEntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -133,8 +129,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param object $event
-   * @param string $eventName
+   * {@inheritDoc}
    */
   public function dispatch(object $event, string $eventName): void
   {
@@ -142,9 +137,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * getDriver
-   *
-   * @return \Doctrine\DBAL\Driver
+   * {@inheritDoc}
    */
   public function getDriver(): \Doctrine\DBAL\Driver
   {
@@ -152,7 +145,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @return bool
+   * {@inheritDoc}
    */
   public function isPgsql(): bool
   {
@@ -160,11 +153,9 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param string|null $currentLanguage
-   *
-   * @return $this
+   * {@inheritDoc}
    */
-  public function setCurrentLanguage(?string $currentLanguage = null): EntityManager
+  public function setCurrentLanguage(?string $currentLanguage = null): self
   {
     $this->currentLanguage = $currentLanguage;
 
@@ -172,11 +163,9 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param EntityManagerEvent<T> $entityManagerEvent
-   *
-   * @return $this
+   * {@inheritDoc}
    */
-  public function addEntityManagerEvent(EntityManagerEvent $entityManagerEvent): EntityManager
+  public function addEntityManagerEvent(EntityManagerEvent $entityManagerEvent): self
   {
     $this->entityManagerEvents[] = $entityManagerEvent;
 
@@ -184,7 +173,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @return DoctrineEntityManagerInterface
+   * {@inheritDoc}
    */
   public function getDoctrineEntityManager(): DoctrineEntityManagerInterface
   {
@@ -192,7 +181,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @return array<string, mixed>
+   * {@inheritDoc}
    */
   public function getFieldsMappingAll(): array
   {
@@ -200,7 +189,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @return array<string, mixed>
+   * {@inheritDoc}
    */
   public function getFieldsMappingWithAssociation(): array
   {
@@ -216,9 +205,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param class-string|null $class
-   *
-   * @return array<string, mixed>
+   * {@inheritDoc}
    */
   public function getFieldsMapping(?string $class = null): array
   {
@@ -231,9 +218,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param class-string|null $class
-   *
-   * @return ClassMetadata<object>|null
+   * {@inheritDoc}
    */
   public function getClassMetadata(?string $class = null): ?ClassMetadata
   {
@@ -241,9 +226,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param EntityInterface<T> $sourceObject
-   *
-   * @return EntityInterface<T>
+   * {@inheritDoc}
    */
   public function duplicate(EntityInterface $sourceObject): EntityInterface
   {
@@ -258,9 +241,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param array<string, mixed> $values
-   *
-   * @return EntityInterface<T>
+   * {@inheritDoc}
    */
   public function create(array $values = []): EntityInterface
   {
@@ -276,13 +257,9 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param EntityInterface<T> $object
-   * @param bool               $andFlush
-   * @param bool               $dispatchToFlush
-   *
-   * @return $this
+   * {@inheritDoc}
    */
-  public function update(EntityInterface $object, bool $andFlush = true, bool $dispatchToFlush = false): EntityManager
+  public function update(EntityInterface $object, bool $andFlush = true, bool $dispatchToFlush = false): self
   {
     $entityManagerEvent = new EntityManagerEvent('update', $this, $object);
     $this->dispatch($entityManagerEvent, EntityManagerEvent::EVENT_UPDATE);
@@ -298,12 +275,9 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param EntityInterface<T> $object
-   * @param bool               $andFlush
-   *
-   * @return $this
+   * {@inheritDoc}
    */
-  public function delete(EntityInterface $object, bool $andFlush = true): EntityManager
+  public function delete(EntityInterface $object, bool $andFlush = true): self
   {
     $entityManagerEvent = new EntityManagerEvent('delete', $this, $object);
     $this->dispatch($entityManagerEvent, EntityManagerEvent::EVENT_DELETE);
@@ -319,43 +293,30 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @return $this
+   * {@inheritDoc}
    */
-  public function flush(): EntityManager
+  public function flush(): self
   {
-    if ($this->entityManagerEvents)
+    $entityManagerEvents = array_filter($this->entityManagerEvents, static fn (EntityManagerEvent $entityManagerEvent): bool => $entityManagerEvent->getDispatchToFlush());
+    $this->entityManagerEvents = [];
+
+    /** @var EntityManagerEvent<T> $entityManagerEvent */
+    foreach ($entityManagerEvents as $entityManagerEvent)
     {
-      /** @var EntityManagerEvent<T> $entityManagerEvent */
-      foreach ($this->entityManagerEvents as $entityManagerEvent)
-      {
-        if ($entityManagerEvent->getDispatchToFlush())
-        {
-          $this->dispatch($entityManagerEvent, EntityManagerEvent::EVENT_PUSH_BEFORE);
-        }
-      }
+      $this->dispatch($entityManagerEvent, EntityManagerEvent::EVENT_PUSH_BEFORE);
     }
     $this->em->flush();
-    if ($this->entityManagerEvents)
+    /** @var EntityManagerEvent<T> $entityManagerEvent */
+    foreach ($entityManagerEvents as $entityManagerEvent)
     {
-      /** @var EntityManagerEvent<T> $entityManagerEvent */
-      foreach ($this->entityManagerEvents as $entityManagerEvent)
-      {
-        if ($entityManagerEvent->getDispatchToFlush())
-        {
-          $this->dispatch($entityManagerEvent, EntityManagerEvent::EVENT_PUSH_AFTER);
-        }
-      }
+      $this->dispatch($entityManagerEvent, EntityManagerEvent::EVENT_PUSH_AFTER);
     }
 
     return $this;
   }
 
   /**
-   * @param EntityInterface<T> $object
-   *
-   * @return $this
-   *
-   * @throws ORMException
+   * {@inheritDoc}
    */
   public function refresh(EntityInterface $object): self
   {
@@ -365,7 +326,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @return $this
+   * {@inheritDoc}
    */
   public function clear(): self
   {
@@ -375,9 +336,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param array<int|string, EntityInterface<T>> $objects
-   *
-   * @return $this
+   * {@inheritDoc}
    */
   public function deletes(array $objects): self
   {
@@ -386,44 +345,38 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
     {
       $this->delete($object, false);
     }
-    $this->em->flush();
+    $this->flush();
 
     return $this;
   }
 
   /**
-   * @return $this
-   *
-   * @throws Exception
-   * @throws \Exception
+   * {@inheritDoc}
    */
-  public function truncate(): EntityManager
+  public function truncate(): self
   {
     if ($class = $this->getClass())
     {
       $classMetaData = $this->getDoctrineEntityManager()->getClassMetadata($class);
       $connection = $this->getDoctrineEntityManager()->getConnection();
       $dbPlatform = $connection->getDatabasePlatform();
-      $connection->beginTransaction();
-      $isMysql = $connection->getDriver() instanceof Driver;
-      try
+      $tableName = ($classMetaData->getSchemaName() ? "{$classMetaData->getSchemaName()}." : '').$classMetaData->getTableName();
+
+      if ($dbPlatform instanceof AbstractMySQLPlatform)
       {
-        if ($isMysql)
+        $connection->executeStatement('SET FOREIGN_KEY_CHECKS=0');
+        try
         {
-          $connection->executeQuery('SET FOREIGN_KEY_CHECKS=0');
+          $connection->executeStatement($dbPlatform->getTruncateTableSQL($tableName));
         }
-        $q = $dbPlatform->getTruncateTableSql(($classMetaData->getSchemaName() ? "{$classMetaData->getSchemaName()}." : '').$classMetaData->getTableName(), true);
-        $connection->executeStatement($q);
-        if ($isMysql)
+        finally
         {
-          $connection->executeQuery('SET FOREIGN_KEY_CHECKS=1');
+          $connection->executeStatement('SET FOREIGN_KEY_CHECKS=1');
         }
-        $connection->commit();
       }
-      catch (\Exception $e)
+      else
       {
-        $connection->rollback();
-        throw $e;
+        $connection->transactional(static fn (Connection $connection): int|string => $connection->executeStatement($dbPlatform->getTruncateTableSQL($tableName, true)));
       }
     }
 
@@ -439,12 +392,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param string                              $id
-   * @param (callable(QueryBuilder): void)|null $closure
-   *
-   * @return EntityInterface<T>|null
-   *
-   * @throws NonUniqueResultException
+   * {@inheritDoc}
    */
   public function retrieveById(string $id, ?callable $closure = null): ?EntityInterface
   {
@@ -452,13 +400,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param string                                        $key
-   * @param string                                        $value
-   * @param (callable(AustralQueryBuilder<T>): void)|null $closure
-   *
-   * @return EntityInterface<T>|null
-   *
-   * @throws NonUniqueResultException
+   * {@inheritDoc}
    */
   public function retrieveByKey(string $key, string $value, ?callable $closure = null): ?EntityInterface
   {
@@ -466,11 +408,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param (callable(AustralQueryBuilder<T>): void)|null $closure
-   *
-   * @return EntityInterface<T>|null
-   *
-   * @throws NonUniqueResultException
+   * {@inheritDoc}
    */
   public function retrieveByClosure(?callable $closure = null): ?EntityInterface
   {
@@ -478,33 +416,27 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   }
 
   /**
-   * @param non-empty-string                              $orderByAttribute
-   * @param 'ASC'|'DESC'                                  $orderByType
-   * @param (callable(AustralQueryBuilder<T>): void)|null $closure
-   *
-   * @return Collection<int, EntityInterface<T>>|null
-   *
-   * @throws QueryException
+   * {@inheritDoc}
    */
-  public function selectAll(string $orderByAttribute = 'id', string $orderByType = 'ASC', ?callable $closure = null): ?Collection
+  public function selectAll(string $orderByAttribute = 'id', string $orderByType = 'ASC', ?callable $closure = null): array
   {
-    return $this->repository?->selectAll($orderByAttribute, $orderByType, $closure);
+    return $this->repository?->selectAll($orderByAttribute, $orderByType, $closure) ?? [];
   }
 
   /**
    * {@inheritDoc}
    */
-  public function selectByQueryBuilder(QueryBuilder $queryBuilder): ?Collection
+  public function selectByQueryBuilder(QueryBuilder $queryBuilder): array
   {
-    return $this->repository?->selectByQueryBuilder($queryBuilder);
+    return $this->repository?->selectByQueryBuilder($queryBuilder) ?? [];
   }
 
   /**
    * {@inheritDoc}
    */
-  public function selectByClosure(?callable $closure, string $alias = 'root'): ?Collection
+  public function selectByClosure(?callable $closure, string $alias = 'root'): array
   {
-    return $this->repository?->selectByClosure($closure, $alias);
+    return $this->repository?->selectByClosure($closure, $alias) ?? [];
   }
 
   /**
@@ -592,10 +524,14 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function getRepository(?string $entity = null): EntityRepositoryInterface|EntityRepository|null
   {
-    $repository = $entity ? $this->getDoctrineEntityManager()->getRepository($entity) : $this->repository;
+    if (null === $entity)
+    {
+      return $this->repository;
+    }
+
+    $repository = $this->getDoctrineEntityManager()->getRepository($entity);
     if ($repository instanceof EntityRepositoryInterface)
     {
-      $this->repository = $repository;
       $repository->setDispatcher($this->dispatcher);
     }
 

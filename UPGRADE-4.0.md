@@ -21,6 +21,32 @@ All `austral/*` packages must be upgraded to `^4.0` at the same time.
 
 This protected property was never read nor written by Austral. If your own entity manager extends `Austral\EntityBundle\EntityManager\EntityManager` and uses `$this->user`, declare the property in your class.
 
+### `paginatorByQueryBuilder()` and `paginatorByClosure()` return a `PaginatorResult`
+
+In 3.x these methods (on the repository and on the entity manager) returned an array with the `count` and `objects` keys. They now return an `Austral\EntityBundle\Paginator\PaginatorResult`.
+
+Before:
+
+```php
+$result = $entityManager->paginatorByQueryBuilder($queryBuilder);
+$count = $result['count'];
+$objects = $result['objects'];
+```
+
+After:
+
+```php
+$result = $entityManager->paginatorByQueryBuilder($queryBuilder);
+$count = $result->getCount();
+$objects = $result->getObjects();
+```
+
+When the query fails, `getCount()` returns `0`, `getObjects()` returns `[]` and `getException()` returns the exception that was raised.
+
+### `Entity::serialize()` returns JSON
+
+`Entity::serialize()` returned `serialize($this->arrayObject())`. It now returns the same JSON string as `Entity::json()` and is deprecated. If you need the PHP serialized form, call `serialize($entity->arrayObject())` in your code.
+
 <!--
 For each break: what changes, why, and a before / after example.
 

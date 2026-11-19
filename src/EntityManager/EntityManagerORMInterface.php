@@ -12,10 +12,14 @@
 namespace Austral\EntityBundle\EntityManager;
 
 use Austral\Contracts\Entity\EntityInterface;
+use Austral\EntityBundle\Event\EntityManagerEvent;
 use Austral\EntityBundle\ORM\AustralQueryBuilder;
 use Austral\EntityBundle\Paginator\PaginatorResult;
-use Doctrine\Common\Collections\Collection;
+use Austral\EntityBundle\Repository\EntityRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface as DoctrineEntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\QueryException;
@@ -72,26 +76,26 @@ interface EntityManagerORMInterface extends EntityManagerInterface
    * @param 'ASC'|'DESC'                        $orderByType
    * @param (callable(QueryBuilder): void)|null $closure
    *
-   * @return Collection<int, EntityInterface<T>>|null
+   * @return array<array-key, EntityInterface<T>>
    *
    * @throws QueryException
    */
-  public function selectAll(string $orderByAttribute = 'id', string $orderByType = 'ASC', ?callable $closure = null): ?Collection;
+  public function selectAll(string $orderByAttribute = 'id', string $orderByType = 'ASC', ?callable $closure = null): array;
 
   /**
    * @param QueryBuilder $queryBuilder
    *
-   * @return Collection<int, EntityInterface<T>>|null
+   * @return array<array-key, EntityInterface<T>>
    */
-  public function selectByQueryBuilder(QueryBuilder $queryBuilder): ?Collection;
+  public function selectByQueryBuilder(QueryBuilder $queryBuilder): array;
 
   /**
    * @param (callable(QueryBuilder): void)|null $closure
    * @param non-empty-string                    $alias
    *
-   * @return Collection<int, EntityInterface<T>>|null
+   * @return array<array-key, EntityInterface<T>>
    */
-  public function selectByClosure(?callable $closure, string $alias = 'root'): ?Collection;
+  public function selectByClosure(?callable $closure, string $alias = 'root'): array;
 
   /**
    * @param EntityInterface<T>                  $object
@@ -160,4 +164,129 @@ interface EntityManagerORMInterface extends EntityManagerInterface
    * @return $this
    */
   public function update(EntityInterface $object, bool $andFlush = true, bool $dispatchToFlush = false): self;
+
+  /**
+   * @param array<string, mixed> $values
+   *
+   * @return EntityInterface<T>
+   */
+  public function create(array $values = []): EntityInterface;
+
+  /**
+   * @return $this
+   *
+   * @throws \Exception
+   */
+  public function truncate(): self;
+
+  /**
+   * @param EntityInterface<T> $object
+   * @param bool               $andFlush
+   *
+   * @return $this
+   */
+  public function delete(EntityInterface $object, bool $andFlush = true): self;
+
+  /**
+   * @param array<int|string, EntityInterface<T>> $objects
+   *
+   * @return $this
+   */
+  public function deletes(array $objects): self;
+
+  /**
+   * @param class-string<T>|null $entity
+   *
+   * @return EntityRepositoryInterface<object>|EntityRepository<object>|null
+   */
+  public function getRepository(?string $entity = null): EntityRepositoryInterface|EntityRepository|null;
+
+  /**
+   * @return $this
+   */
+  public function flush(): self;
+
+  /**
+   * @param EntityInterface<T> $object
+   *
+   * @return $this
+   *
+   * @throws ORMException
+   */
+  public function refresh(EntityInterface $object): self;
+
+  /**
+   * @param EntityInterface<T> $sourceObject
+   *
+   * @return EntityInterface<T>
+   */
+  public function duplicate(EntityInterface $sourceObject): EntityInterface;
+
+  /**
+   * @param class-string|null $class
+   *
+   * @return ClassMetadata<object>|null
+   */
+  public function getClassMetadata(?string $class = null): ?ClassMetadata;
+
+  /**
+   * @param class-string|null $class
+   *
+   * @return array<string, mixed>
+   */
+  public function getFieldsMapping(?string $class = null): array;
+
+  /**
+   * @return array<string, mixed>
+   */
+  public function getFieldsMappingWithAssociation(): array;
+
+  /**
+   * @return array<string, mixed>
+   */
+  public function getFieldsMappingAll(): array;
+
+  /**
+   * @param EntityManagerEvent<T> $entityManagerEvent
+   *
+   * @return $this
+   */
+  public function addEntityManagerEvent(EntityManagerEvent $entityManagerEvent): self;
+
+  /**
+   * @param string|null $currentLanguage
+   *
+   * @return $this
+   */
+  public function setCurrentLanguage(?string $currentLanguage = null): self;
+
+  /**
+   * @return bool
+   */
+  public function isPgsql(): bool;
+
+  /**
+   * getDriver
+   *
+   * @return \Doctrine\DBAL\Driver
+   */
+  public function getDriver(): \Doctrine\DBAL\Driver;
+
+  /**
+   * @param object $event
+   * @param string $eventName
+   */
+  public function dispatch(object $event, string $eventName): void;
+
+  /**
+   * @param class-string<T> $class
+   *
+   * @return $this
+   */
+  public function setClass(string $class): self;
+
+  /**
+   * @return $this
+   */
+  public function clear(): self;
 }
