@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Deprecated
 
 - `Entity::serialize()`, use `json()` instead.
+- `Austral\EntityBundle\Entity\EntityInterface`, use `Austral\Contracts\Entity\EntityInterface` (austral/contracts).
 
 ### Fixed
 
