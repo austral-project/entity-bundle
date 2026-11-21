@@ -60,7 +60,7 @@ interface EntityClassMappingInterface
   /**
    * @param EntityInterface<T> $object
    * @param string             $fieldname
-   * @param null               $value
+   * @param string|null        $value
    *
    * @return $this
    *

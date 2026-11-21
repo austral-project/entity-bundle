@@ -31,7 +31,7 @@ final class EntityValueAccessor implements ValueAccessorInterface
   /**
    * {@inheritDoc}
    */
-  public function setValue(EntityInterface $object, string $fieldname, mixed $value): void
+  public function setValue(EntityInterface $object, string $fieldname, mixed $value = null): void
   {
     $object->setValueByFieldname($fieldname, $value);
   }
