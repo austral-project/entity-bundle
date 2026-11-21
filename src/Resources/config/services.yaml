@@ -61,14 +61,6 @@ services:
     alias:        Austral\EntityBundle\EntityManager\EntityManager
     public:       true
 
-##### Annotation Listener Kernel
-  Austral\EntityBundle\Listener\EntityMappingListener:
-    tags:
-      - { name: kernel.event_listener, event: kernel.request, method: initEntityAnnotations, priority: 0 }
-  austral.entity.mapping.listener:
-    alias:        Austral\EntityBundle\Listener\EntityMappingListener
-    public:       true
-
 ##### Doctrine Listener (nettoyage #[AustralEntitySanitize])
   Austral\EntityBundle\Listener\DoctrineListener:
     tags:

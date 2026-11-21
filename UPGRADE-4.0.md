@@ -94,6 +94,26 @@ After:
 $value = $entity->json();                       // JSON representation
 ```
 
+### Mapping built on first access, `EntityMappingListener` removed
+
+In 3.x the mapping (`austral.entity.mapping`) was built by `Austral\EntityBundle\Listener\EntityMappingListener` on `kernel.request`. It was therefore empty in console commands, Messenger workers and Doctrine listeners run outside an HTTP request, and it was built again on every sub-request.
+
+The mapping is now built by `Austral\EntityBundle\Mapping\Mapping` itself, the first time it is read, once per service instance. The `austral.event.entity.initialise.mapping` event and `EntityMappingEvent` do not change: listeners registered on this event keep working.
+
+Removed:
+
+- the `Austral\EntityBundle\Listener\EntityMappingListener` class and its `initEntityAnnotations()` method;
+- the `austral.entity.mapping.listener` service.
+
+If your code called `initEntityAnnotations()` to make sure the mapping was ready, remove the call:
+
+```diff
+- $container->get('austral.entity.mapping.listener')->initEntityAnnotations();
+  $entityMapping = $container->get('austral.entity.mapping')->getEntityMapping(Page::class);
+```
+
+The constructor of `Mapping` has two new arguments (the event dispatcher and a closure returning `EntitiesAttributes`). This only matters if you create the service yourself instead of using `austral.entity.mapping`.
+
 <!--
 For each break: what changes, why, and a before / after example.
 

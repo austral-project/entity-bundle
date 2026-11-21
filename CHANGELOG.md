@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `countByQueryBuilder()` counts distinct root entities (`COUNT(DISTINCT <root alias>)`), ignoring the `ORDER BY` and the pagination of the given QueryBuilder.
 - `InitialiseBundleEntities` and `InitialiseBundleEntitiesCommand` receive their dependencies through the constructor instead of the service container.
 - `EntityManagerEventSubscriber` uses the PropertyAccess component to read and write entity fields; a `PropertyAccessorInterface` can be injected.
+- **BREAKING** `Mapping` builds itself on first access (it dispatches `austral.event.entity.initialise.mapping` once per service instance) instead of being built on `kernel.request`. Its constructor receives the event dispatcher and a closure returning `EntitiesAttributes`.
 
 ### Deprecated
 
@@ -30,12 +31,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `EntityManager::flush()` dispatches the pending `push.before` / `push.after` events only once; `deletes()` now dispatches them.
 - `EntityManager::getRepository($class)` no longer replaces the repository of the entity manager.
 - `duplicate()` works with the Doctrine ORM 3 `FieldMapping` objects, no longer calls `setId(null)` on entities with a non-string identifier, and supports embeddable fields.
+- The mapping is available in console commands, Messenger workers and Doctrine listeners run outside an HTTP request (it was empty there, so commands such as `austral:file:compress` did nothing).
+- The mapping is no longer built again on each sub-request, which registered every field mapping several times (`getAllFieldsMappingClassByFieldname()` returned duplicates).
 
 ### Removed
 
 - **BREAKING** `Austral\EntityBundle\Entity\EntityInterface`: use `Austral\Contracts\Entity\EntityInterface` (austral/contracts).
 - **BREAKING** `Entity::serialize()`, removed from `Austral\EntityBundle\Entity\Entity` and from `Austral\Contracts\Entity\EntityInterface`: use `json()`.
 - `EntityManager::$user`: unused property, removed (entity-bundle no longer depends on symfony/security-core).
+- **BREAKING** `Austral\EntityBundle\Listener\EntityMappingListener` and the `austral.entity.mapping.listener` service: the mapping builds itself on first access.
 
 ## [3.1.0] - 2022-09-17
 

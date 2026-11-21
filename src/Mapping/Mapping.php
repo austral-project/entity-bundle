@@ -12,11 +12,14 @@
 namespace Austral\EntityBundle\Mapping;
 
 use Austral\Contracts\Entity\EntityInterface;
+use Austral\EntityBundle\EntityAttributes\EntitiesAttributes;
 use Austral\EntityBundle\EntityManager\EntityManager;
+use Austral\EntityBundle\Event\EntityMappingEvent;
 use Austral\EntityBundle\Repository\EntityRepositoryInterface;
 use Austral\ToolsBundle\Services\Debug;
-use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\DependencyInjection\Attribute\AutowireServiceClosure;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Austral EntityMapping.
@@ -24,10 +27,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  * @template T of object
  *
  * @author Matthieu Beurel <matthieu@austral.dev>
- *
- * @final
  */
-final class Mapping
+class Mapping
 {
   /**
    * @var array<string, EntityMapping<T>>
@@ -40,30 +41,79 @@ final class Mapping
   private array $sluggers = [];
 
   /**
+   * @var bool
+   */
+  private bool $initialised = false;
+
+  /**
+   * @var bool
+   */
+  private bool $initialising = false;
+
+  /**
    * Mapping constructor
    *
-   * @param EntityManager<T> $entityManager
-   * @param Debug            $debug
+   * @param EntityManager<T>         $entityManager
+   * @param Debug                    $debug
+   * @param EventDispatcherInterface $eventDispatcher
+   * @param \Closure                 $entitiesAttributes
    */
   public function __construct(
     #[Autowire(service: 'austral.entity_manager')] private EntityManager $entityManager,
     #[Autowire(service: 'austral.tools.debug')] private Debug $debug,
+    #[Autowire(service: 'event_dispatcher')] private EventDispatcherInterface $eventDispatcher,
+    #[AutowireServiceClosure('austral.entity.entities-attributes')] private \Closure $entitiesAttributes
   ) {
   }
 
   /**
    * @return Debug
    */
-  public function getDebug(): Debug
+  protected function getDebug(): Debug
   {
     return $this->debug;
   }
 
   /**
+   * initialise
+   *
+   * @return void
+   *
+   * @throws \Throwable
+   */
+  private function initialise(): void
+  {
+    if ($this->initialised || $this->initialising)
+    {
+      return;
+    }
+    $this->initialising = true;
+    $this->debug->stopWatchStart('initialise', 'entity.mapping');
+    try
+    {
+      $this->sluggers = [];
+      /** @var EntitiesAttributes<T> $entitiesAttributes */
+      $entitiesAttributes = ($this->entitiesAttributes)();
+      $this->entitiesMapping = [];
+      $this->eventDispatcher->dispatch(new EntityMappingEvent($this, $entitiesAttributes), EntityMappingEvent::EVENT_AUSTRAL_ENTITY_INITIALISE_MAPPING);
+      $this->initialised = true;
+    }
+    finally
+    {
+      $this->initialising = false;
+      $this->debug->stopWatchStop('initialise');
+    }
+  }
+
+  /**
    * @return array<string, EntityMapping<T>>
+   *
+   * @throws \Throwable
    */
   public function getEntitiesMapping(): array
   {
+    $this->initialise();
+
     return $this->entitiesMapping;
   }
 
@@ -72,9 +122,12 @@ final class Mapping
    * @param EntityMapping<T> $entityMapping
    *
    * @return $this
+   *
+   * @throws \Throwable
    */
   public function addEntityMapping(string $classname, EntityMapping $entityMapping): Mapping
   {
+    $this->initialise();
     $entityMapping->setMapping($this);
     $this->entitiesMapping[$classname] = $entityMapping;
     $this->sluggers[$entityMapping->slugger] = $classname;
@@ -86,9 +139,12 @@ final class Mapping
    * @param string $entityClass
    *
    * @return EntityMapping<T>|null
+   *
+   * @throws \Throwable
    */
   public function getEntityMapping(string $entityClass): ?EntityMapping
   {
+    $this->initialise();
     if (array_key_exists($entityClass, $this->sluggers))
     {
       $entityClass = $this->sluggers[$entityClass];
@@ -105,6 +161,8 @@ final class Mapping
    * @param string $entityClass
    *
    * @return array<string, array<string, FieldMappingInterface<T>>>|array<null>
+   *
+   * @throws \Throwable
    */
   public function getFieldsMapping(string $entityClass): array
   {
@@ -117,6 +175,8 @@ final class Mapping
    * @param string       $fieldname
    *
    * @return FieldMappingInterface<T>|null
+   *
+   * @throws \Throwable
    */
   public function getFieldsMappingByFieldname(string $entityClass, string $fieldMappingClass, string $fieldname): ?FieldMappingInterface
   {
@@ -128,6 +188,8 @@ final class Mapping
    * @param class-string $fieldMappingClass
    *
    * @return array<string, FieldMappingInterface<T>>|array<null>
+   *
+   * @throws \Throwable
    */
   public function getFieldsMappingByClass(string $entityClass, string $fieldMappingClass): array
   {
@@ -139,6 +201,8 @@ final class Mapping
    * @param string $entityClassMapping
    *
    * @return EntityClassMappingInterface<T>|null
+   *
+   * @throws \Throwable
    */
   public function getEntityClassMapping(string $entityClass, string $entityClassMapping): ?EntityClassMappingInterface
   {
@@ -150,6 +214,8 @@ final class Mapping
    * @param string $fieldname
    *
    * @return array<int, FieldMappingInterface<T>>|array<null>
+   *
+   * @throws \Throwable
    */
   public function getAllFieldsMappingClassByFieldname(string $entityClass, string $fieldname): array
   {
@@ -162,7 +228,7 @@ final class Mapping
    *
    * @return EntityInterface<object>|null any entity class known by the mapping, not only T
    *
-   * @throws NonUniqueResultException
+   * @throws \Throwable
    */
   public function getObject(string $classOrSlugger, string $id): ?EntityInterface
   {
@@ -182,6 +248,8 @@ final class Mapping
    * @param string $entityClass
    *
    * @return string|null
+   *
+   * @throws \Throwable
    */
   public function getSlugger(string $entityClass): ?string
   {

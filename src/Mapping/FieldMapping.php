@@ -12,6 +12,8 @@
 namespace Austral\EntityBundle\Mapping;
 
 use Austral\Contracts\Entity\EntityInterface;
+use Austral\EntityBundle\Mapping\ValueAccessor\EntityValueAccessor;
+use Austral\EntityBundle\Mapping\ValueAccessor\ValueAccessorInterface;
 
 /**
  * Austral FieldMapping.
@@ -45,6 +47,11 @@ abstract class FieldMapping implements FieldMappingInterface
    * @var EntityMapping<T>|null
    */
   protected ?EntityMapping $entityMapping = null;
+
+  /**
+   * @var ValueAccessorInterface|null
+   */
+  protected ?ValueAccessorInterface $valueAccessor = null;
 
   /**
    * {@inheritDoc}
@@ -85,9 +92,9 @@ abstract class FieldMapping implements FieldMappingInterface
   /**
    * {@inheritDoc}
    */
-  public function addGetterObjectValueFonction(\Closure $getterObjectValueFonction): self
+  public function setValueAccessor(ValueAccessorInterface $valueAccessor): self
   {
-    $this->getterObjectValueFonction = $getterObjectValueFonction;
+    $this->valueAccessor = $valueAccessor;
 
     return $this;
   }
@@ -95,11 +102,9 @@ abstract class FieldMapping implements FieldMappingInterface
   /**
    * {@inheritDoc}
    */
-  public function addSetterObjectValueFonction(\Closure $setterObjectValueFonction): self
+  public function getValueAccessor(): ValueAccessorInterface
   {
-    $this->setterObjectValueFonction = $setterObjectValueFonction;
-
-    return $this;
+    return $this->valueAccessor ??= new EntityValueAccessor();
   }
 
   /**
@@ -108,12 +113,8 @@ abstract class FieldMapping implements FieldMappingInterface
   public function getObjectValue(EntityInterface $object, ?string $fieldname = null): mixed
   {
     $fieldname = $fieldname ?: $this->getFieldname();
-    if ($this->getterObjectValueFonction instanceof \Closure)
-    {
-      return $fieldname ? $this->getterObjectValueFonction->call($this, $object, $fieldname) : null;
-    }
 
-    return $fieldname ? $object->getValueByFieldname($fieldname) : null;
+    return $fieldname ? $this->getValueAccessor()->getValue($object, $fieldname) : null;
   }
 
   /**
@@ -124,11 +125,7 @@ abstract class FieldMapping implements FieldMappingInterface
     $fieldname = $fieldname ?: $this->getFieldname();
     if ($fieldname)
     {
-      if ($this->setterObjectValueFonction instanceof \Closure)
-      {
-        $this->setterObjectValueFonction->call($this, $object, $fieldname, $value);
-      }
-      $object->setValueByFieldname($fieldname, $value);
+      $this->getValueAccessor()->setValue($object, $fieldname, $value);
     }
 
     return $this;

@@ -12,6 +12,7 @@
 namespace Austral\EntityBundle\Mapping;
 
 use Austral\Contracts\Entity\EntityInterface;
+use Austral\EntityBundle\Mapping\ValueAccessor\ValueAccessorInterface;
 
 /**
  * Austral FieldMappingInterface.
@@ -47,18 +48,16 @@ interface FieldMappingInterface
   public function setFieldname(string $fieldname): self;
 
   /**
-   * @param (\Closure(EntityInterface<T>, string): mixed) $getterObjectValueFonction
+   * @param ValueAccessorInterface $valueAccessor
    *
    * @return $this
    */
-  public function addGetterObjectValueFonction(\Closure $getterObjectValueFonction): self;
+  public function setValueAccessor(ValueAccessorInterface $valueAccessor): self;
 
   /**
-   * @param (\Closure(EntityInterface<T>, string, mixed): mixed) $setterObjectValueFonction
-   *
-   * @return $this
+   * @return ValueAccessorInterface
    */
-  public function addSetterObjectValueFonction(\Closure $setterObjectValueFonction): self;
+  public function getValueAccessor(): ValueAccessorInterface;
 
   /**
    * @param EntityInterface<T> $object
