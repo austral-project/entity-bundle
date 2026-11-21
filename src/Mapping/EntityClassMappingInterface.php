@@ -12,6 +12,7 @@
 namespace Austral\EntityBundle\Mapping;
 
 use Austral\Contracts\Entity\EntityInterface;
+use Austral\EntityBundle\Mapping\ValueAccessor\ValueAccessorInterface;
 
 /**
  * Austral EntityClassMappingInterface.
@@ -27,7 +28,7 @@ interface EntityClassMappingInterface
    *
    * @return $this
    */
-  public function setEntityMapping(EntityMapping $entityMapping): EntityClassMappingInterface;
+  public function setEntityMapping(EntityMapping $entityMapping): self;
 
   /**
    * @return class-string
@@ -35,18 +36,16 @@ interface EntityClassMappingInterface
   public function getClassname(): string;
 
   /**
-   * @param (\Closure(EntityInterface<T>, string): mixed) $getterObjectValueFonction
+   * @param ValueAccessorInterface $valueAccessor
    *
    * @return $this
    */
-  public function addGetterObjectValueFonction(\Closure $getterObjectValueFonction): self;
+  public function setValueAccessor(ValueAccessorInterface $valueAccessor): self;
 
   /**
-   * @param (\Closure(EntityInterface<T>, string, mixed): mixed) $setterObjectValueFonction
-   *
-   * @return $this
+   * @return ValueAccessorInterface
    */
-  public function addSetterObjectValueFonction(\Closure $setterObjectValueFonction): self;
+  public function getValueAccessor(): ValueAccessorInterface;
 
   /**
    * @param EntityInterface<T> $object
@@ -67,5 +66,5 @@ interface EntityClassMappingInterface
    *
    * @throws \Exception
    */
-  public function setObjectValue(EntityInterface $object, string $fieldname, $value = null): self;
+  public function setObjectValue(EntityInterface $object, string $fieldname, mixed $value = null): self;
 }

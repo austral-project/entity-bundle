@@ -34,16 +34,6 @@ abstract class FieldMapping implements FieldMappingInterface
   protected ?string $fieldname = null;
 
   /**
-   * @var (\Closure(EntityInterface<T>, string): mixed)|null
-   */
-  protected ?\Closure $getterObjectValueFonction = null;
-
-  /**
-   * @var (\Closure(EntityInterface<T>, string, mixed): mixed)|null
-   */
-  protected ?\Closure $setterObjectValueFonction = null;
-
-  /**
    * @var EntityMapping<T>|null
    */
   protected ?EntityMapping $entityMapping = null;
