@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `Austral\EntityBundle\Mapping\ValueAccessor\ValueAccessorInterface` and its default implementation `EntityValueAccessor`: how the mapping reads and writes a field value. They hold no closure, so the mapping can be cached.
+- `Austral\EntityBundle\PropertyAccess\FieldAccessor`: checks whether a field can be read or written with the PropertyAccess rules (getters, `is`/`has`/`can`, setters, adders, public properties), without magic methods and without an instance (`symfony/property-info`).
 ### Changed
 
 - Sources moved to `src/`, tests to `tests/` (PSR-4 `Austral\EntityBundle\` → `src/`).
@@ -18,11 +20,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `InitialiseBundleEntities` and `InitialiseBundleEntitiesCommand` receive their dependencies through the constructor instead of the service container.
 - `EntityManagerEventSubscriber` uses the PropertyAccess component to read and write entity fields; a `PropertyAccessorInterface` can be injected.
 - **BREAKING** `Mapping` builds itself on first access (it dispatches `austral.event.entity.initialise.mapping` once per service instance) instead of being built on `kernel.request`. Its constructor receives the event dispatcher and a closure returning `EntitiesAttributes`.
+- **BREAKING** The getter and setter closures of the mapping are replaced by value accessor objects: `FieldMapping` and `EntityClassMapping` (and their interfaces) get `setValueAccessor()` / `getValueAccessor()`, and use `EntityValueAccessor` by default.
+- **BREAKING** Services are defined explicitly (no autowiring, no autoconfiguration). Service ids named after a class (`Austral\EntityBundle\…`) are private: use the public `austral.entity.*` aliases to get a service from the container. Autowiring a class of the bundle in an application still works.
+- **BREAKING** The protected properties of `EntityManager` are renamed: `$em` → `$doctrineEntityManager`, `$dispatcher` → `$eventDispatcher` (and the constructor arguments accordingly).
 
 ### Deprecated
 
 ### Fixed
 
+- `FieldMapping::setObjectValue()` no longer writes the value twice when a custom setter is set (the closure was called, then `setValueByFieldname()` as well).
+- Sanitizers of the application that implement `AustralSanitizerInterface` are tagged `austral_entity.sanitizer_rule` automatically (`registerForAutoconfiguration()`). The `_instanceof` rule of 3.x only applied to the services of the bundle, so they were ignored.
 - `retrieveByKey()` throws an `\InvalidArgumentException` when the key is not a mapped field of the entity, instead of building DQL from an arbitrary string.
 - `truncate()` works on MySQL / MariaDB with any driver (platform check instead of the `pdo_mysql` driver class), no longer fails on the implicit commit of `TRUNCATE`, and always restores the foreign key checks.
 - `selectAll()`, `selectByQueryBuilder()` and `selectByClosure()` return an `array` again, as in 3.x (the `?Collection` return type did not match the returned value); the `EntityManager` versions return `[]` when no repository is set.
@@ -40,6 +47,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **BREAKING** `Entity::serialize()`, removed from `Austral\EntityBundle\Entity\Entity` and from `Austral\Contracts\Entity\EntityInterface`: use `json()`.
 - `EntityManager::$user`: unused property, removed (entity-bundle no longer depends on symfony/security-core).
 - **BREAKING** `Austral\EntityBundle\Listener\EntityMappingListener` and the `austral.entity.mapping.listener` service: the mapping builds itself on first access.
+- **BREAKING** `FieldMapping::addGetterObjectValueFonction()`, `addSetterObjectValueFonction()` and the same methods of `EntityClassMapping`: use `setValueAccessor()` with a `ValueAccessorInterface`.
+- `Austral\EntityBundle\EventSubscriber\QueryBuilderEventSubscriber` and the `austral.entity.query_builder.event_subscriber` service: its listener was empty. `AustralQueryBuilder::queryCondition()` still dispatches `QueryBuilderEvent::EVENT_CONDITION`.
 
 ## [3.1.0] - 2022-09-17
 

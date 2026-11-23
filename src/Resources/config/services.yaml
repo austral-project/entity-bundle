@@ -1,39 +1,46 @@
 services:
-  _defaults:
-    autowire:       true
-    autoconfigure:  true
-    public:         true
 
 ##### Services #####
-  _instanceof:
-    Austral\EntityBundle\Sanitizer\AustralSanitizerInterface:
-      tags: [ 'austral_entity.sanitizer_rule' ]
 
-  Austral\EntityBundle\Sanitizer\AustralDefaultSanitizer: ~
-  Austral\EntityBundle\Sanitizer\AustralHtmlSanitizer: ~
+  Austral\EntityBundle\Sanitizer\AustralDefaultSanitizer:
+    tags: [ austral_entity.sanitizer_rule ]
+  Austral\EntityBundle\Sanitizer\AustralHtmlSanitizer:
+    tags: [austral_entity.sanitizer_rule]
 
-  Austral\EntityBundle\Services\Sanitizer: ~
+  Austral\EntityBundle\Services\Sanitizer:
+    arguments:
+      $sanitizers: !tagged_iterator austral_entity.sanitizer_rule
   austral.entity.sanitizer:
     alias:        Austral\EntityBundle\Services\Sanitizer
     public:       true
 
-  Austral\EntityBundle\Services\InitialiseBundleEntities: ~
+  Austral\EntityBundle\Services\InitialiseBundleEntities:
+    arguments:
+      $rootPathEntities:  '%austral.entity.initialise-bundle.path%'
+      $bundles:           '%kernel.bundles%'
   austral.entity.initialise-bundle:
     alias:        Austral\EntityBundle\Services\InitialiseBundleEntities
     public:       true
 
-  Austral\EntityBundle\EntityAttributes\EntitiesAttributes: ~
+  Austral\EntityBundle\EntityAttributes\EntitiesAttributes:
+    arguments:
+      $entityManager: '@austral.entity_manager'
+      $debug:         '@austral.tools.debug'
   austral.entity.entities-attributes:
     alias:        Austral\EntityBundle\EntityAttributes\EntitiesAttributes
     public:       true
 
-  Austral\EntityBundle\Mapping\Mapping: ~
+  Austral\EntityBundle\Mapping\Mapping:
+    arguments:
+      $entityManager:       '@austral.entity_manager'
+      $debug:               '@austral.tools.debug'
+      $eventDispatcher:     '@event_dispatcher'
+      $entitiesAttributes:  !service_closure '@austral.entity.entities-attributes'
   austral.entity.mapping:
     alias:        Austral\EntityBundle\Mapping\Mapping
     public:       true
 
 ##### Austral Event Subscriber
-
   Austral\EntityBundle\EventSubscriber\EntityManagerEventSubscriber:
     tags:
       - { name: kernel.event_subscriber }
@@ -48,21 +55,19 @@ services:
     alias:        Austral\EntityBundle\EventSubscriber\EntityMappingEventSubscriber
     public:       true
 
-  Austral\EntityBundle\EventSubscriber\QueryBuilderEventSubscriber:
-    tags:
-      - { name: kernel.event_subscriber }
-  austral.entity.query_builder.event_subscriber:
-    alias:        Austral\EntityBundle\EventSubscriber\QueryBuilderEventSubscriber
-    public:       true
-
 ##### Austral Entity Manager
-  Austral\EntityBundle\EntityManager\EntityManager: ~
+  Austral\EntityBundle\EntityManager\EntityManager:
+    arguments:
+      $doctrineEntityManager: '@doctrine.orm.entity_manager'
+      $eventDispatcher: '@event_dispatcher'
   austral.entity_manager:
     alias:        Austral\EntityBundle\EntityManager\EntityManager
     public:       true
 
 ##### Doctrine Listener
   Austral\EntityBundle\Listener\DoctrineListener:
+    arguments:
+      $sanitizer: '@austral.entity.sanitizer'
     tags:
       - { name: doctrine.event_listener, event: prePersist, connection: default }
       - { name: doctrine.event_listener, event: preUpdate, connection: default }

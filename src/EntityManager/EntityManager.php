@@ -23,7 +23,6 @@ use Doctrine\ORM\EntityManagerInterface as DoctrineEntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -38,11 +37,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
 {
-  /**
-   * @var DoctrineEntityManagerInterface
-   */
-  protected DoctrineEntityManagerInterface $em;
-
   /**
    * @var EntityRepositoryInterface<T>|null
    */
@@ -59,11 +53,6 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   protected ?string $currentLanguage = null;
 
   /**
-   * @var EventDispatcherInterface
-   */
-  protected EventDispatcherInterface $dispatcher;
-
-  /**
    * @var array<int|string, EntityManagerEvent<T>>
    */
   protected array $entityManagerEvents = [];
@@ -71,17 +60,15 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   /**
    * Constructor.
    *
-   * @param DoctrineEntityManagerInterface $em
-   * @param EventDispatcherInterface       $dispatcher
+   * @param DoctrineEntityManagerInterface $doctrineEntityManager
+   * @param EventDispatcherInterface       $eventDispatcher
    * @param class-string<T>|null           $class
    */
   public function __construct(
-    #[Autowire(service: 'doctrine.orm.entity_manager')] DoctrineEntityManagerInterface $em,
-    #[Autowire(service: 'event_dispatcher')] EventDispatcherInterface $dispatcher,
+    protected DoctrineEntityManagerInterface $doctrineEntityManager,
+    protected EventDispatcherInterface $eventDispatcher,
     ?string $class = null
   ) {
-    $this->em = $em;
-    $this->dispatcher = $dispatcher;
     $this->initRepository($class);
   }
 
@@ -96,13 +83,13 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   {
     if ($class)
     {
-      $repository = $this->em->getRepository($class);
+      $repository = $this->doctrineEntityManager->getRepository($class);
       if ($repository instanceof EntityRepositoryInterface)
       {
         $this->repository = $repository;
-        $this->repository->setDispatcher($this->dispatcher);
+        $this->repository->setDispatcher($this->eventDispatcher);
       }
-      $this->class = $this->em->getClassMetadata($class)->getName();
+      $this->class = $this->doctrineEntityManager->getClassMetadata($class)->getName();
     }
 
     return $this;
@@ -131,9 +118,9 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
   /**
    * {@inheritDoc}
    */
-  public function dispatch(object $event, string $eventName): void
+  public function dispatch(object $eventDispatcher, string $eventName): void
   {
-    $this->dispatcher->dispatch($event, $eventName);
+    $this->eventDispatcher->dispatch($eventDispatcher, $eventName);
   }
 
   /**
@@ -177,7 +164,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function getDoctrineEntityManager(): DoctrineEntityManagerInterface
   {
-    return $this->em;
+    return $this->doctrineEntityManager;
   }
 
   /**
@@ -222,7 +209,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function getClassMetadata(?string $class = null): ?ClassMetadata
   {
-    return $class ? $this->em->getClassMetadata($class) : ($this->class ? $this->em->getClassMetadata($this->class) : null);
+    return $class ? $this->doctrineEntityManager->getClassMetadata($class) : ($this->class ? $this->doctrineEntityManager->getClassMetadata($this->class) : null);
   }
 
   /**
@@ -265,7 +252,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
     $this->dispatch($entityManagerEvent, EntityManagerEvent::EVENT_UPDATE);
     $this->addEntityManagerEvent($entityManagerEvent);
     $entityManagerEvent->setDispatchToFlush($dispatchToFlush);
-    $this->em->persist($object);
+    $this->doctrineEntityManager->persist($object);
     if ($andFlush)
     {
       $this->flush();
@@ -283,7 +270,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
     $this->dispatch($entityManagerEvent, EntityManagerEvent::EVENT_DELETE);
     $this->addEntityManagerEvent($entityManagerEvent);
     $entityManagerEvent->setDispatchToFlush(true);
-    $this->em->remove($object);
+    $this->doctrineEntityManager->remove($object);
     if ($andFlush)
     {
       $this->flush();
@@ -305,7 +292,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
     {
       $this->dispatch($entityManagerEvent, EntityManagerEvent::EVENT_PUSH_BEFORE);
     }
-    $this->em->flush();
+    $this->doctrineEntityManager->flush();
     /** @var EntityManagerEvent<T> $entityManagerEvent */
     foreach ($entityManagerEvents as $entityManagerEvent)
     {
@@ -320,7 +307,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function refresh(EntityInterface $object): self
   {
-    $this->em->refresh($object);
+    $this->doctrineEntityManager->refresh($object);
 
     return $this;
   }
@@ -330,7 +317,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
    */
   public function clear(): self
   {
-    $this->em->clear();
+    $this->doctrineEntityManager->clear();
 
     return $this;
   }
@@ -532,7 +519,7 @@ class EntityManager implements EntityManagerInterface, EntityManagerORMInterface
     $repository = $this->getDoctrineEntityManager()->getRepository($entity);
     if ($repository instanceof EntityRepositoryInterface)
     {
-      $repository->setDispatcher($this->dispatcher);
+      $repository->setDispatcher($this->eventDispatcher);
     }
 
     return $repository;

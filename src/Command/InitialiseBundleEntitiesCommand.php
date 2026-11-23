@@ -15,7 +15,6 @@ use Austral\EntityBundle\Services\InitialiseBundleEntities;
 use Austral\ToolsBundle\Command\Base\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Austral Initialise Bundle Entities Command.
@@ -51,7 +50,7 @@ class InitialiseBundleEntitiesCommand extends Command
   }
 
   public function __construct(
-    #[Autowire(service: 'austral.entity.initialise-bundle')] private InitialiseBundleEntities $initialiseBundleService,
+    private InitialiseBundleEntities $initialiseBundleService,
     ?string $name = null,
     ?callable $code = null
   ) {

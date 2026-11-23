@@ -17,8 +17,6 @@ use Austral\EntityBundle\EntityManager\EntityManager;
 use Austral\EntityBundle\Event\EntityMappingEvent;
 use Austral\EntityBundle\Repository\EntityRepositoryInterface;
 use Austral\ToolsBundle\Services\Debug;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\DependencyInjection\Attribute\AutowireServiceClosure;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -59,10 +57,10 @@ class Mapping
    * @param \Closure                 $entitiesAttributes
    */
   public function __construct(
-    #[Autowire(service: 'austral.entity_manager')] private EntityManager $entityManager,
-    #[Autowire(service: 'austral.tools.debug')] private Debug $debug,
-    #[Autowire(service: 'event_dispatcher')] private EventDispatcherInterface $eventDispatcher,
-    #[AutowireServiceClosure('austral.entity.entities-attributes')] private \Closure $entitiesAttributes
+    private EntityManager $entityManager,
+    private Debug $debug,
+    private EventDispatcherInterface $eventDispatcher,
+    private \Closure $entitiesAttributes
   ) {
   }
 

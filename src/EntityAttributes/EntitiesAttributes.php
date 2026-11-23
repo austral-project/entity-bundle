@@ -16,7 +16,6 @@ use Austral\EntityBundle\Attribute\Slugger;
 use Austral\EntityBundle\EntityManager\EntityManager;
 use Austral\ToolsBundle\Services\Debug;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Austral EntitiesAttributes.
@@ -27,16 +26,6 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 class EntitiesAttributes
 {
-  /**
-   * @var EntityManager<T>
-   */
-  protected EntityManager $entityManager;
-
-  /**
-   * @var Debug
-   */
-  protected Debug $debug;
-
   /**
    * @var array<string, EntityAttributes<T>>
    */
@@ -51,11 +40,9 @@ class EntitiesAttributes
    * @throws \ReflectionException
    */
   public function __construct(
-    #[Autowire(service: 'austral.entity_manager')] EntityManager $entityManager,
-    #[Autowire(service: 'austral.tools.debug')] Debug $debug,
+    protected EntityManager $entityManager,
+    protected Debug $debug,
   ) {
-    $this->entityManager = $entityManager;
-    $this->debug = $debug;
     $this->initMetadata();
   }
 

@@ -11,7 +11,6 @@
 
 namespace Austral\EntityBundle\Services;
 
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -35,8 +34,8 @@ class InitialiseBundleEntities
    * @param array<string, class-string> $bundles
    */
   public function __construct(
-    #[Autowire(param: 'austral.entity.initialise-bundle.path')] private readonly string $rootPathEntities,
-    #[Autowire(param: 'kernel.bundles')] private readonly array $bundles = []
+    private readonly string $rootPathEntities,
+    private readonly array $bundles = []
   ) {
     $this->filesystem = new Filesystem();
   }

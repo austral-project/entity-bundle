@@ -13,7 +13,6 @@ namespace Austral\EntityBundle\Services;
 
 use Austral\EntityBundle\Attribute\AustralEntitySanitize;
 use Austral\EntityBundle\Sanitizer\AustralSanitizerInterface;
-use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 /**
@@ -39,7 +38,7 @@ class Sanitizer
    * @param iterable<AustralSanitizerInterface> $sanitizers
    */
   public function __construct(
-    #[AutowireIterator('austral_entity.sanitizer_rule')] iterable $sanitizers = []
+    iterable $sanitizers = []
   ) {
     foreach ($sanitizers as $sanitizer)
     {

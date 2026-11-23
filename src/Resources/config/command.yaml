@@ -1,10 +1,11 @@
 services:
-  _defaults:
-    autowire:     true
-    public:       false
 
-  ##### User Command
+  ##### Command Initialise bundle
   austral.entity.initialise-bundle.command:
     class:        Austral\EntityBundle\Command\InitialiseBundleEntitiesCommand
+    arguments:
+      $initialiseBundleService: '@austral.entity.initialise-bundle'
+    calls:
+      - [ setEventDispatcher, [ '@event_dispatcher' ] ]
     tags:
       - { name: console.command, command: "austral:entity:initialise-bundle" }

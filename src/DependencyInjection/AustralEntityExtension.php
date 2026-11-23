@@ -11,6 +11,7 @@
 
 namespace Austral\EntityBundle\DependencyInjection;
 
+use Austral\EntityBundle\Sanitizer\AustralSanitizerInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -32,6 +33,9 @@ class AustralEntityExtension extends Extension
    */
   public function load(array $configs, ContainerBuilder $container): void
   {
+    $container->registerForAutoconfiguration(AustralSanitizerInterface::class)
+      ->addTag('austral_entity.sanitizer_rule');
+
     $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
     $loader->load('parameters.yaml');
     $loader->load('services.yaml');
