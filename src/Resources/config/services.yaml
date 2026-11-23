@@ -61,7 +61,7 @@ services:
     alias:        Austral\EntityBundle\EntityManager\EntityManager
     public:       true
 
-##### Doctrine Listener (nettoyage #[AustralEntitySanitize])
+##### Doctrine Listener
   Austral\EntityBundle\Listener\DoctrineListener:
     tags:
       - { name: doctrine.event_listener, event: prePersist, connection: default }
