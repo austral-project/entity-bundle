@@ -1,7 +1,6 @@
 services:
 
 ##### Services #####
-
   Austral\EntityBundle\Sanitizer\AustralDefaultSanitizer:
     tags: [ austral_entity.sanitizer_rule ]
   Austral\EntityBundle\Sanitizer\AustralHtmlSanitizer:
@@ -40,21 +39,6 @@ services:
     alias:        Austral\EntityBundle\Mapping\Mapping
     public:       true
 
-##### Austral Event Subscriber
-  Austral\EntityBundle\EventSubscriber\EntityManagerEventSubscriber:
-    tags:
-      - { name: kernel.event_subscriber }
-  austral.entity.manager.event_subscriber:
-    alias:        Austral\EntityBundle\EventSubscriber\EntityManagerEventSubscriber
-    public:       true
-
-  Austral\EntityBundle\EventSubscriber\EntityMappingEventSubscriber:
-    tags:
-      - { name: kernel.event_subscriber }
-  austral.entity.mapping.event_subscriber:
-    alias:        Austral\EntityBundle\EventSubscriber\EntityMappingEventSubscriber
-    public:       true
-
 ##### Austral Entity Manager
   Austral\EntityBundle\EntityManager\EntityManager:
     arguments:
@@ -64,6 +48,15 @@ services:
     alias:        Austral\EntityBundle\EntityManager\EntityManager
     public:       true
 
+##### Austral Event Subscriber
+  Austral\EntityBundle\EventSubscriber\EntityManagerEventSubscriber:
+    tags:
+      - { name: kernel.event_subscriber }
+
+  Austral\EntityBundle\EventSubscriber\EntityMappingEventSubscriber:
+    tags:
+      - { name: kernel.event_subscriber }
+
 ##### Doctrine Listener
   Austral\EntityBundle\Listener\DoctrineListener:
     arguments:
@@ -71,6 +64,3 @@ services:
     tags:
       - { name: doctrine.event_listener, event: prePersist, connection: default }
       - { name: doctrine.event_listener, event: preUpdate, connection: default }
-  austral.entity.doctrine.listener:
-    alias:        Austral\EntityBundle\Listener\DoctrineListener
-    public:       true

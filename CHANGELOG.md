@@ -21,7 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `EntityManagerEventSubscriber` uses the PropertyAccess component to read and write entity fields; a `PropertyAccessorInterface` can be injected.
 - **BREAKING** `Mapping` builds itself on first access (it dispatches `austral.event.entity.initialise.mapping` once per service instance) instead of being built on `kernel.request`. Its constructor receives the event dispatcher and a closure returning `EntitiesAttributes`.
 - **BREAKING** The getter and setter closures of the mapping are replaced by value accessor objects: `FieldMapping` and `EntityClassMapping` (and their interfaces) get `setValueAccessor()` / `getValueAccessor()`, and use `EntityValueAccessor` by default.
-- **BREAKING** Services are defined explicitly (no autowiring, no autoconfiguration). Service ids named after a class (`Austral\EntityBundle\…`) are private: use the public `austral.entity.*` aliases to get a service from the container. Autowiring a class of the bundle in an application still works.
+- **BREAKING** Services are defined explicitly (no autowiring, no autoconfiguration). Service ids named after a class (`Austral\EntityBundle\…`) are private: use the public `austral.entity.*` aliases to get a service from the container. The aliases of the listeners and subscribers are private. Autowiring a class of the bundle in an application still works.
 - **BREAKING** The protected properties of `EntityManager` are renamed: `$em` → `$doctrineEntityManager`, `$dispatcher` → `$eventDispatcher` (and the constructor arguments accordingly).
 
 ### Deprecated

@@ -173,6 +173,8 @@ After:
 $mapping = $container->get('austral.entity.mapping');
 ```
 
+The aliases of the listeners and subscribers (`austral.entity.doctrine.listener`, `austral.entity.manager.event_subscriber`, `austral.entity.mapping.event_subscriber`) are private too: they are called by the event dispatchers and are not meant to be fetched from the container.
+
 Injecting a service is not affected: autowiring `Austral\EntityBundle\Mapping\Mapping` (or any other class of the bundle) in a constructor of your application keeps working, and so does a reference to an alias in YAML (`'@austral.entity.mapping'`).
 
 | Class | Public alias |
@@ -182,9 +184,6 @@ Injecting a service is not affected: autowiring `Austral\EntityBundle\Mapping\Ma
 | `EntityAttributes\EntitiesAttributes` | `austral.entity.entities-attributes` |
 | `Mapping\Mapping` | `austral.entity.mapping` |
 | `EntityManager\EntityManager` | `austral.entity_manager` |
-| `Listener\DoctrineListener` | `austral.entity.doctrine.listener` |
-| `EventSubscriber\EntityManagerEventSubscriber` | `austral.entity.manager.event_subscriber` |
-| `EventSubscriber\EntityMappingEventSubscriber` | `austral.entity.mapping.event_subscriber` |
 
 ### Custom sanitizers are registered automatically
 

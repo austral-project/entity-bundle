@@ -35,16 +35,14 @@ final class ContainerTest extends TestCase
 {
   /**
    * Public aliases: the supported way to get a service from the container.
+   * Listeners and subscribers are called by the dispatchers, never fetched: their aliases stay private.
    */
   private const array PUBLIC_ALIASES = [
     'austral.entity.sanitizer',
     'austral.entity.initialise-bundle',
     'austral.entity.entities-attributes',
     'austral.entity.mapping',
-    'austral.entity.manager.event_subscriber',
-    'austral.entity.mapping.event_subscriber',
     'austral.entity_manager',
-    'austral.entity.doctrine.listener',
   ];
 
   /**
