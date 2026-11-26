@@ -46,6 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **BREAKING** `Austral\EntityBundle\Entity\EntityInterface`: use `Austral\Contracts\Entity\EntityInterface` (austral/contracts).
 - **BREAKING** `Entity::serialize()`, removed from `Austral\EntityBundle\Entity\Entity` and from `Austral\Contracts\Entity\EntityInterface`: use `json()`.
 - `EntityManager::$user`: unused property, removed (entity-bundle no longer depends on symfony/security-core).
+- The `doctrine/doctrine-migrations-bundle` dependency: the bundle does not use it, and `^3.0` prevented the installation in a project with DoctrineMigrationsBundle 4 (installed by `symfony/orm-pack`). The project chooses its version.
 - **BREAKING** `Austral\EntityBundle\Listener\EntityMappingListener` and the `austral.entity.mapping.listener` service: the mapping builds itself on first access.
 - **BREAKING** `FieldMapping::addGetterObjectValueFonction()`, `addSetterObjectValueFonction()` and the same methods of `EntityClassMapping`: use `setValueAccessor()` with a `ValueAccessorInterface`.
 - `Austral\EntityBundle\EventSubscriber\QueryBuilderEventSubscriber` and the `austral.entity.query_builder.event_subscriber` service: its listener was empty. `AustralQueryBuilder::queryCondition()` still dispatches `QueryBuilderEvent::EVENT_CONDITION`.

@@ -15,6 +15,8 @@
 
 All `austral/*` packages must be upgraded to `^4.0` at the same time.
 
+entity-bundle no longer requires `doctrine/doctrine-migrations-bundle`: a project that runs migrations requires it itself (`symfony/orm-pack` does).
+
 ## Breaking changes
 
 ### `EntityManager::$user` removed

@@ -25,7 +25,6 @@
     "doctrine/collections": "^2.2 || ^3.1",
     "doctrine/dbal": "^4.0",
     "doctrine/doctrine-bundle": "^3.2.2",
-    "doctrine/doctrine-migrations-bundle": "^3.0",
     "doctrine/orm": "^3.7",
     "gedmo/doctrine-extensions": "^3.0",
     "ramsey/uuid": "^4.9.1",
